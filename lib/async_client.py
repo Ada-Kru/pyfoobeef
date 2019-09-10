@@ -43,6 +43,7 @@ from .client import (
     PlaylistRef,
     Paths,
     ItemIndices,
+    ColumnsMap
 )
 
 
@@ -130,17 +131,27 @@ class AsyncClient:
                         )
 
     async def get_player_state(
-        self, column_map: Optional[dict] = None
+        self, column_map: Optional[ColumnsMap] = None
     ) -> PlayerState:
         """
         Get the status of the player.
 
-        :param column_map: Dict where each key is the active item field to
-            request and the value is the attribute name to map that attribute
-            to the returned Column object. i.e. {"%track artist%": "artist"}
-            will result in the returned object having an
-            active_item.columns.artist attribute containing information
-            returned from the active item's %track artist% field.
+        :param column_map: Dict, list, tuple, or set where each key
+            (for dict, set) or item (for list, tuple) is the active item field
+            to request.  If a dict is used each value is the attribute name to
+            map that key to the returned Column object.
+
+            Names that would be invalid as Python attrubute names may only be
+            accessed through subscripting (i.e. "%title%" or "my custom name").
+
+            Examples-
+            {"%track artist%": "artist"} will result in the returned object
+            having an active_item.columns.artist attribute containing
+            information returned from the active item's %track artist% field.
+
+            ["%title%", "%album%"] will result in the returned object
+            bieng subscriptable like active_item.columns["%album%"] which will
+            return information returned from the active item's %album% field.
         :returns: PlayerState object
         """
         if column_map is None:
@@ -200,10 +211,11 @@ class AsyncClient:
         """
         Start playback of a specific item.
 
-        :param playlist_ref: The ID or numerical index of the playlist that
-            contains the media to play.
+        :param playlist_ref: The PlaylistInfo object, ID, or numerical index
+            of the playlist that contains the media to play.
         :param index: The index number of the item to play.
         """
+        playlist_ref = param_value_to_str(playlist_ref)
         await self._request(PLAY_SPECIFIC, paths=locals())
 
     async def play_random(self) -> None:
@@ -272,27 +284,38 @@ class AsyncClient:
         playlist_ref: PlaylistRef,
         offset: int = 0,
         count: int = 1000000,
-        column_map: Optional[dict] = None,
+        column_map: Optional[ColumnsMap] = None,
     ) -> PlaylistItems:
         """
         Get an object representing the items in a specific playlist.
 
-        :param playlist_ref: The playlist ID or numerical playlist index.
+        :param playlist_ref: The PlaylistInfo object, ID, or numerical
+            playlist index.
         :param offset: The start index of the items to retrieve.
         :param count: The amount of items to retrieve.
-        :param column_map: Dict where each key is the item field to
-            request and the value is the attribute name to map that attribute
-            to the returned Column object. i.e. {"%track artist%": "artist"}
-            will result in the each item having an artist attribute
-            containing information returned from the item's %track artist%
-            field.
+        :param column_map: Dict, list, tuple, or set where each key
+            (for dict, set) or item (for list, tuple) is the item field
+            to request.  If a dict is used each value is the attribute name to
+            map that key to the returned Column object.
+
+            Names that would be invalid as Python attrubute names may only be
+            accessed through subscripting (i.e. "%title%" or "my custom name").
+
+            Examples-
+            {"%track artist%": "artist"} will result in the returned object
+            having an artist attribute containing information returned from
+            the active item's %track artist% field.
+
+            ["%title%", "%album%"] will result in the returned object bieng
+            subscriptable like columns["%album%"] which will return
+            information returned from the active item's %album% field.
         :returns: A PlaylistItems object.
         """
         if column_map is None:
             column_map = self._default_column_map
         params = {
             "playlistItems": "true",
-            "plref": playlist_ref,
+            "plref": param_value_to_str(playlist_ref),
             "plrange": f"{offset}:{count}",
             "plcolumns": param_value_to_str(column_map),
         }
@@ -306,27 +329,38 @@ class AsyncClient:
         """
         Set the currently selected playlist.
 
-        :param playlist_ref: The playlist ID or numerical playlist index.
+        :param playlist_ref: The PlaylistInfo object, ID, or numerical
+            playlist index.
         """
-        params = {"current": playlist_ref}
+        params = {"current": param_value_to_str(playlist_ref)}
         return await self._request(SET_CURRENT_PLAYLIST, params=params)
 
     async def add_playlist(
-        self, index: Optional[int] = None, title: Optional[str] = None
-    ) -> None:
+        self,
+        index: Optional[int] = None,
+        title: Optional[str] = None,
+        return_playlist: Optional[bool] = True,
+    ) -> Optional[PlaylistInfo]:
         """
         Create a new playlist.
 
         :param index: The numerical index to insert the new playlist.
             None = last position.
         :param title: The title of the playlist.
+        :param return_playlist: If True makes a second request to beefweb to
+            retrieve the playlist info for the new playlist.
+        :returns: A PlaylistInfo namedtuple if return_playlist is True else
+            None
         """
         params = {}
         if index is not None:
             params["index"] = index
         if title is not None:
             params["title"] = title
-        return await self._request(ADD_PLAYLIST, params=params)
+        await self._request(ADD_PLAYLIST, params=params)
+        if return_playlist:
+            return (await self.get_playlists()).find_playlist(title)
+        return None
 
     async def set_playlist_title(
         self, playlist_ref: PlaylistRef, title: str
@@ -334,10 +368,11 @@ class AsyncClient:
         """
         Change a playlist's title.
 
-        :param playlist_ref: The playlist ID or numerical playlist index.
+        :param playlist_ref: The PlaylistInfo object, ID, or numerical
+            playlist index.
         :param title: The new title of the playlist.
         """
-        paths = {"playlist_ref": playlist_ref}
+        paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         params = {"title": title}
         await self._request(UPDATE_PLAYLIST, paths=paths, params=params)
 
@@ -345,7 +380,8 @@ class AsyncClient:
         """
         Remove a playlist.
 
-        :param playlist_ref: The playlist ID or numerical playlist index.
+        :param playlist_ref: The PlaylistInfo object, ID, or numerical
+            playlist index.
         """
         paths = {"playlist_ref": playlist_ref}
         return await self._request(REMOVE_PLAYLIST, paths=paths)
@@ -356,20 +392,25 @@ class AsyncClient:
         """
         Move a playlist to a new index.
 
-        :param playlist_ref: The playlist ID or numerical playlist index.
+        :param playlist_ref: The PlaylistInfo object, ID, or numerical
+            playlist index.
         :param index: The new index of the playlist.
             Negative value = last position.
         """
-        paths = {"playlist_ref": playlist_ref, "new_index": new_index}
+        paths = {
+            "playlist_ref": param_value_to_str(playlist_ref),
+            "new_index": new_index,
+        }
         return await self._request(MOVE_PLAYLIST, paths=paths)
 
     async def clear_playlist(self, playlist_ref: PlaylistRef) -> None:
         """
         Remove all items from a playlist.
 
-        :param playlist_ref: The playlist ID or numerical playlist index.
+        :param playlist_ref: The PlaylistInfo object, ID, or numerical
+            playlist index.
         """
-        paths = {"playlist_ref": playlist_ref}
+        paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         return await self._request(CLEAR_PLAYLIST, paths=paths)
 
     async def get_browser_roots(self) -> BrowserEntry:
@@ -404,7 +445,8 @@ class AsyncClient:
         """
         Add items to a playlist.
 
-        :param playlist_ref: The playlist ID or numerical playlist index.
+        :param playlist_ref: The PlaylistInfo object, ID, or numerical
+            playlist index.
         :param items: A list or tuple of strings containing the paths of
             files and/or directories to add.  Note that the paths are case
             sensitive even in windows.
@@ -412,7 +454,7 @@ class AsyncClient:
         :param asynchronous: Set to True to make the request asynchronously
             and not wait for the items to finish processing before returning.
         """
-        paths = {"playlist_ref": playlist_ref}
+        paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         params = {"async": param_value_to_str(asynchronous)}
         if dest_index is not None:
             params["index"] = param_value_to_str(dest_index)
@@ -430,11 +472,12 @@ class AsyncClient:
         """
         Copy items to the same playlist.
 
-        :param playlist_ref: The playlist ID or numerical playlist index.
+        :param playlist_ref: The PlaylistInfo object, ID, or numerical
+            playlist index.
         :param item_indices: Indices of the items to be copied.
         :param dest_index: The index in the playlist to insert the copies.
         """
-        paths = {"playlist_ref": playlist_ref}
+        paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         params = {}
         if dest_index is not None:
             params["targetIndex"] = dest_index
@@ -453,16 +496,16 @@ class AsyncClient:
         """
         Copy items to a different playlist.
 
-        :param source_playlist: The playlist ID or numerical playlist index
-            of the source.
-        :param source_playlist: The playlist ID or numerical playlist index
-            of the destination.
+        :param source_playlist: The PlaylistInfo object, ID, or numerical
+            playlist index of the source.
+        :param source_playlist: The PlaylistInfo object, ID, or numerical
+            playlist index of the destination.
         :param item_indices: Indices of the items to be copied.
         :param dest_index: The index in the playlist to insert the copies.
         """
         paths = {
-            "source_playlist_ref": source_playlist,
-            "dest_playlist_ref": dest_playlist,
+            "source_playlist_ref": param_value_to_str(source_playlist),
+            "dest_playlist_ref": param_value_to_str(dest_playlist),
         }
         params = {}
         if dest_index is not None:
@@ -481,11 +524,12 @@ class AsyncClient:
         """
         Move items to a different index in the same playlist.
 
-        :param playlist_ref: The playlist ID or numerical playlist index.
+        :param playlist_ref: The PlaylistInfo object, ID, or numerical
+            playlist index.
         :param item_indices: Indices of the items to be moved.
         :param dest_index: The index in the playlist to move the items.
         """
-        paths = {"playlist_ref": playlist_ref}
+        paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         params = {}
         if dest_index is not None:
             params["targetIndex"] = dest_index
@@ -504,16 +548,16 @@ class AsyncClient:
         """
         Move items to a different playlist.
 
-        :param source_playlist: The playlist ID or numerical playlist index
-            of the source.
-        :param source_playlist: The playlist ID or numerical playlist index
-            of the destination.
+        :param source_playlist: The PlaylistInfo object, ID, or numerical
+            playlist index of the source.
+        :param source_playlist: The PlaylistInfo object, ID, or numerical
+            playlist index of the destination.
         :param item_indices: Indices of the items to be moved.
         :param dest_index: The index in the playlist to insert the items.
         """
         paths = {
-            "source_playlist_ref": source_playlist,
-            "dest_playlist_ref": dest_playlist,
+            "source_playlist_ref": param_value_to_str(source_playlist),
+            "dest_playlist_ref": param_value_to_str(dest_playlist),
         }
         params = {}
         if dest_index is not None:
@@ -529,10 +573,11 @@ class AsyncClient:
         """
         Remove items from a playlist.
 
-        :param playlist_ref: The playlist ID or numerical playlist index.
+        :param playlist_ref: The PlaylistInfo object, ID, or numerical
+            playlist index.
         :param item_indices: Indices of the items to be removed.
         """
-        paths = {"playlist_ref": playlist_ref}
+        paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         params = {}
         content = {"items": item_indices}
         return await self._request(
@@ -549,12 +594,13 @@ class AsyncClient:
         """
         Sort the items in a playlist.
 
-        :param playlist_ref: The playlist ID or numerical playlist index.
+        :param playlist_ref: The PlaylistInfo object, ID, or numerical
+            playlist index.
         :param by: The media player field to sort by (i.e. "%title%").
         :param desc: Sort in descending order.
         :param random: Sort in random order.
         """
-        paths = {"playlist_ref": playlist_ref}
+        paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         params = {
             "by": by,
             "desc": param_value_to_str(desc),
@@ -568,9 +614,13 @@ class AsyncClient:
         """
         Get an items artwork.
 
-        :param playlist_ref: The playlist ID or numerical playlist index.
+        :param playlist_ref: The PlaylistInfo object, ID, or numerical
+            playlist index.
         :param index: The index of the item to get artwork for.
         """
-        paths = {"playlist_ref": playlist_ref, "index": index}
+        paths = {
+            "playlist_ref": param_value_to_str(playlist_ref),
+            "index": index,
+        }
         params = {}
         return await self._request(GET_ARTWORK, params=params, paths=paths)

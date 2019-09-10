@@ -16,6 +16,16 @@ PlaylistInfo = namedtuple(
 Volume = namedtuple("Volume", ["type", "min", "max", "value", "is_muted"])
 
 
+def process_column_map(column_map):
+    map_type = type(column_map)
+    if map_type is None:
+        return {}
+    elif map_type is dict:
+        return column_map
+    elif map_type in (set, list, tuple):
+        return {key: key for key in column_map}
+
+
 def seconds_to_hhmmss(total_seconds: float) -> str:
     minutes, seconds = divmod(total_seconds, 60)
     hours, minutes = divmod(minutes, 60)
@@ -51,6 +61,10 @@ class ActiveItem:
         """A Columns object containing information about the active item's
            informaiton fields.
         """
+
+    def has_columns(self) -> bool:
+        """:returns: If the active item returned column information."""
+        return self.columns is not None
 
     def position_hhmmss(self) -> str:
         """:returns: The playback position of the active item as hh:mm:ss."""
@@ -91,8 +105,7 @@ class Columns:
     _reserved_attributes = set(("_reserved_attributes", "_num_columns"))
 
     def __init__(self, column_map, returned_columns):
-        if column_map is None:
-            column_map = {}
+        column_map = process_column_map(column_map)
         self._num_columns = len(returned_columns)
         for i, key in enumerate(column_map.keys()):
             attribute_name = column_map[key]
@@ -142,9 +155,6 @@ class PlayerState:
     """A class representing the state of the player."""
 
     def __init__(self, data, column_map=None):
-
-        if column_map is None:
-            column_map = {}
 
         self._creation_time = time()
 
@@ -295,8 +305,6 @@ class PlaylistItems:
 
     def __init__(self, data, column_map=None):
 
-        if column_map is None:
-            column_map = {}
         self._items = []
         self.total_count = 0
         """The total amount of items in the playlist."""

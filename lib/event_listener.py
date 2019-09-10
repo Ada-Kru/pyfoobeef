@@ -8,7 +8,7 @@ from collections import namedtuple
 from urllib.parse import urlencode
 from typing import Optional, Callable
 from .models import Playlists, PlaylistItems, PlayerState
-from .client import param_value_to_str, PlaylistRef
+from .client import param_value_to_str, PlaylistRef, ColumnsMap
 
 
 InfoHandler = namedtuple(
@@ -41,10 +41,10 @@ class EventListener:
         self,
         base_url: str,
         port: int,
-        active_item_column_map: Optional[dict] = None,
+        active_item_column_map: Optional[ColumnsMap] = None,
         no_active_item_ignore_time: Optional[float] = 0.25,
         playlist_ref: Optional[PlaylistRef] = None,
-        playlist_items_column_map: Optional[dict] = None,
+        playlist_items_column_map: Optional[ColumnsMap] = None,
         offset: Optional[int] = 0,
         count: Optional[int] = 1000000,
         username: Optional[str] = None,
@@ -56,13 +56,22 @@ class EventListener:
         :param base_url: The base URL of the beefweb server
             (i.e. "localhost").
         :param port: The port number of the beefweb server.
-        :param active_item_column_map: Dict where each key is the active item
-            field to request and the value is the attribute name to map that
-            attribute to the returned Column object. i.e.
-            {"%track artist%": "artist"} will result in the player_state
-            attribute having an active_item.columns.artist attribute
-            containing information returned from the active item's
-            %track artist% field.
+        :param active_item_column_map: Dict, list, tuple, or set where each key
+            (for dict, set) or item (for list, tuple) is the active item field
+            to request.  If a dict is used each value is the attribute name to
+            map that key to the returned Column object.
+
+            Names that would be invalid as Python attrubute names may only be
+            accessed through subscripting (i.e. "%title%" or "my custom name").
+
+            Examples-
+            {"%track artist%": "artist"} will result in the returned object
+            having an active_item.columns.artist attribute containing
+            information returned from the active item's %track artist% field.
+
+            ["%title%", "%album%"] will result in the returned object
+            bieng subscriptable like active_item.columns["%album%"] which will
+            return information returned from the active item's %album% field.
         :param no_active_item_ignore_time: When switching between playlist
             items the media player will briefly report that there is no active
             item before updating with the information of the next item.  This
@@ -73,6 +82,22 @@ class EventListener:
             disable.
         :param playlist_ref: The ID or numerical index of the playlist to
             retrieve items from.  If left as None will not retrieve any items.
+        :param playlist_items_column_map: Dict, list, tuple, or set where each
+            key (for dict, set) or item (for list, tuple) is the item field
+            to request.  If a dict is used each value is the attribute name to
+            map that key to the returned Column object.
+
+            Names that would be invalid as Python attrubute names may only be
+            accessed through subscripting (i.e. "%title%" or "my custom name").
+
+            Examples-
+            {"%track artist%": "artist"} will result in the returned object
+            having an artist attribute containing information returned from
+            the active item's %track artist% field.
+
+            ["%title%", "%album%"] will result in the returned object bieng
+            subscriptable like columns["%album%"] which will return
+            information returned from the active item's %album% field.
         :param offset: The index offset to retrieve playlist items from when
             playlist_ref is not set to None.
         :param count: The number of playlist items to retrieve when
