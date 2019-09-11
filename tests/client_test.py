@@ -50,11 +50,10 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(state.volume.value, vol)
 
     def test_play_states(self):
-        self.beefweb.add_playlist(title=self.plist1_title)
-        playlist_id = self.beefweb.find_playlist(self.plist1_title).id
-        self.beefweb.set_current_playlist(playlist_id)
-        self.beefweb.add_playlist_items(playlist_id, [self.media_path])
-        self.beefweb.sort_playlist_items(playlist_id, "%tracknumber%")
+        playlist = self.beefweb.add_playlist(title=self.plist1_title)
+        self.beefweb.set_current_playlist(playlist)
+        self.beefweb.add_playlist_items(playlist, [self.media_path])
+        self.beefweb.sort_playlist_items(playlist, "%tracknumber%")
 
         self.beefweb.play()
         sleep(DEFAULT_TIME_DELAY)
@@ -73,7 +72,7 @@ class ClientTest(unittest.TestCase):
         state = self.beefweb.get_player_state()
         self.assertEqual(state.playback_state, "stopped")
 
-        self.beefweb.play_specific(playlist_id, 0)
+        self.beefweb.play_specific(playlist, 0)
         sleep(DEFAULT_TIME_DELAY)
         state = self.beefweb.get_player_state()
         self.assertEqual(state.active_item.index, 0)
@@ -94,9 +93,7 @@ class ClientTest(unittest.TestCase):
         state = self.beefweb.get_player_state()
         self.assertEqual(state.playback_state, "playing")
 
-        self.beefweb.remove_playlist(playlist_id)
-
-    def test_find_playlist(self):
+    def test_add_and_find_playlist(self):
         self.beefweb.add_playlist(title=self.plist1_title)
         playlist = self.beefweb.find_playlist(title=self.plist1_title)
         self.assertEqual(playlist.title, self.plist1_title)
@@ -104,124 +101,132 @@ class ClientTest(unittest.TestCase):
         playlist = self.beefweb.find_playlist(search_id=playlist.id)
         self.assertEqual(playlist.title, self.plist1_title)
 
-        self.beefweb.remove_playlist(playlist.id)
+        self.beefweb.remove_playlist(playlist)
+
+        playlist = self.beefweb.add_playlist(title=self.plist1_title)
+        self.assertEqual(playlist.title, self.plist1_title)
+        playlist2 = self.beefweb.add_playlist(title=self.plist2_title)
+        self.assertEqual(playlist2.title, self.plist2_title)
+
+        # insert 3rd playlist between other two
+        num_playlists = len(self.beefweb.get_playlists())
+        playlist3 = self.beefweb.add_playlist(
+            title=self.plist3_title, index=num_playlists - 1
+        )
+        self.assertEqual(playlist3.title, self.plist3_title)
+
+        self.beefweb.remove_playlist(playlist)
+        self.beefweb.remove_playlist(playlist2)
+        playlist = self.beefweb.add_playlist(
+            title=self.plist1_title, return_playlist=False
+        )
+        self.assertIsNone(playlist)
+        playlist = self.beefweb.add_playlist(
+            title=self.plist2_title, index=-1, return_playlist=False
+        )
+        self.assertIsNone(playlist)
 
     def test_get_playlist_items(self):
-        self.beefweb.add_playlist(title=self.plist1_title)
-        playlist_id = self.beefweb.find_playlist(self.plist1_title).id
-        self.beefweb.set_current_playlist(playlist_id)
-        self.beefweb.add_playlist_items(playlist_id, [self.media_path])
-        self.beefweb.sort_playlist_items(playlist_id, "%tracknumber%")
+        playlist = self.beefweb.add_playlist(title=self.plist1_title)
+        self.beefweb.set_current_playlist(playlist)
+        self.beefweb.add_playlist_items(playlist, [self.media_path])
+        self.beefweb.sort_playlist_items(playlist, "%tracknumber%")
 
         colmap = {"%title%": "title"}
         items = self.beefweb.get_playlist_items(
-            playlist_id, offset=1, count=2, column_map=colmap
+            playlist, offset=1, count=2, column_map=colmap
         )
         self.assertEqual(len(items), 2)
         self.assertEqual(len(items[0]), 1)
         self.assertEqual(items[0].title, "This is test track 2")
         self.assertEqual(items[1].title, "This is test track 3")
 
-        self.beefweb.remove_playlist(playlist_id)
-
     def test_set_current_playlist(self):
-        self.beefweb.add_playlist(title=self.plist1_title)
-        self.beefweb.add_playlist(title=self.plist2_title)
-        playlist1 = self.beefweb.find_playlist(self.plist1_title)
-        playlist2 = self.beefweb.find_playlist(self.plist2_title)
+        playlist1 = self.beefweb.add_playlist(title=self.plist1_title)
+        playlist2 = self.beefweb.add_playlist(title=self.plist2_title)
 
-        self.beefweb.set_current_playlist(playlist1.id)
+        self.beefweb.set_current_playlist(playlist1)
         playlist = self.beefweb.find_playlist(playlist1.title)
         self.assertTrue(playlist.is_current)
 
-        self.beefweb.set_current_playlist(playlist2.index)
+        self.beefweb.set_current_playlist(playlist2)
         playlist = self.beefweb.find_playlist(playlist2.title)
         self.assertTrue(playlist.is_current)
 
-        self.beefweb.remove_playlist(playlist1.id)
-        self.beefweb.remove_playlist(playlist2.id)
-
     def test_playlist_item_manipulation(self):
-        self.beefweb.add_playlist(title=self.plist1_title)
-        self.beefweb.add_playlist(title=self.plist2_title)
-        self.beefweb.add_playlist(title=self.plist3_title)
-        playlist1 = self.beefweb.find_playlist(self.plist1_title)
-        playlist2 = self.beefweb.find_playlist(self.plist2_title)
-        playlist3 = self.beefweb.find_playlist(self.plist3_title)
-        self.beefweb.set_current_playlist(playlist1.id)
-        self.beefweb.add_playlist_items(playlist1.id, [self.media_path])
-        self.beefweb.sort_playlist_items(playlist1.id, "%tracknumber%")
+        playlist1 = self.beefweb.add_playlist(title=self.plist1_title)
+        playlist2 = self.beefweb.add_playlist(title=self.plist2_title)
+        playlist3 = self.beefweb.add_playlist(title=self.plist3_title)
+        self.beefweb.set_current_playlist(playlist1)
+        self.beefweb.add_playlist_items(playlist1, [self.media_path])
+        self.beefweb.sort_playlist_items(playlist1, "%tracknumber%")
 
         self.beefweb.copy_playlist_items(
-            playlist_ref=playlist1.id, item_indices=(1, 2), dest_index=1
+            playlist_ref=playlist1, item_indices=(1, 2), dest_index=1
         )
-        items = self.beefweb.get_playlist_items(playlist1.id)
+        items = self.beefweb.get_playlist_items(playlist1)
         self.assertEqual(len(items), 5)
         self.assertEqual(items[3].title, "This is test track 2")
         self.assertEqual(items[4].title, "This is test track 3")
 
         self.beefweb.move_playlist_items(
-            playlist_ref=playlist1.id, item_indices=(0, 3), dest_index=4
+            playlist_ref=playlist1, item_indices=(0, 3), dest_index=4
         )
-        items = self.beefweb.get_playlist_items(playlist1.id)
+        items = self.beefweb.get_playlist_items(playlist1)
         self.assertEqual(len(items), 5)
         self.assertEqual(items[2].title, "This is test track 1")
         self.assertEqual(items[3].title, "This is test track 2")
 
         self.beefweb.copy_between_playlists(
-            source_playlist=playlist1.id,
-            dest_playlist=playlist2.id,
+            source_playlist=playlist1,
+            dest_playlist=playlist2,
             item_indices=[0, 1],
         )
         self.beefweb.copy_between_playlists(
-            source_playlist=playlist1.id,
-            dest_playlist=playlist2.id,
+            source_playlist=playlist1,
+            dest_playlist=playlist2,
             item_indices=[2],
             dest_index=1,
         )
-        items = self.beefweb.get_playlist_items(playlist2.id)
+        items = self.beefweb.get_playlist_items(playlist2)
         self.assertEqual(len(items), 3)
         self.assertEqual(items[0].title, "This is test track 2")
         self.assertEqual(items[1].title, "This is test track 1")
         self.assertEqual(items[2].title, "This is test track 3")
 
         self.beefweb.move_between_playlists(
-            source_playlist=playlist2.id,
-            dest_playlist=playlist3.id,
+            source_playlist=playlist2,
+            dest_playlist=playlist3,
             item_indices=(1, 2),
         )
-        items = self.beefweb.get_playlist_items(playlist3.id)
+        items = self.beefweb.get_playlist_items(playlist3)
         self.assertEqual(len(items), 2)
         self.assertEqual(items[0].title, "This is test track 1")
         self.assertEqual(items[1].title, "This is test track 3")
         self.beefweb.move_between_playlists(
-            source_playlist=playlist2.id,
-            dest_playlist=playlist3.id,
+            source_playlist=playlist2,
+            dest_playlist=playlist3,
             item_indices=(0,),
             dest_index=0,
         )
-        items = self.beefweb.get_playlist_items(playlist3.id)
+        items = self.beefweb.get_playlist_items(playlist3)
         self.assertEqual(len(items), 3)
         self.assertEqual(items[0].title, "This is test track 2")
 
         self.beefweb.sort_playlist_items(
-            playlist_ref=playlist3.id, by="%track number%", desc=True
+            playlist_ref=playlist3, by="%track number%", desc=True
         )
-        items = self.beefweb.get_playlist_items(playlist3.id)
+        items = self.beefweb.get_playlist_items(playlist3)
         self.assertEqual(items[0].title, "This is test track 3")
         self.assertEqual(items[1].title, "This is test track 2")
         self.assertEqual(items[2].title, "This is test track 1")
 
         self.beefweb.remove_playlist_items(
-            playlist_ref=playlist3.id, item_indices=(0, 2)
+            playlist_ref=playlist3, item_indices=(0, 2)
         )
-        items = self.beefweb.get_playlist_items(playlist3.id)
+        items = self.beefweb.get_playlist_items(playlist3)
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0].title, "This is test track 2")
-
-        self.beefweb.remove_playlist(playlist1.id)
-        self.beefweb.remove_playlist(playlist2.id)
-        self.beefweb.remove_playlist(playlist3.id)
 
     def test_get_browser(self):
         roots = self.beefweb.get_browser_roots()

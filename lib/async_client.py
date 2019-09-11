@@ -43,7 +43,7 @@ from .client import (
     PlaylistRef,
     Paths,
     ItemIndices,
-    ColumnsMap
+    ColumnsMap,
 )
 
 
@@ -335,7 +335,7 @@ class AsyncClient:
         params = {"current": param_value_to_str(playlist_ref)}
         return await self._request(SET_CURRENT_PLAYLIST, params=params)
 
-    def add_playlist(
+    async def add_playlist(
         self,
         title: str,
         index: Optional[int] = None,
@@ -348,11 +348,13 @@ class AsyncClient:
         :param index: The numerical index to insert the new playlist.
             None = last position.
         :param return_playlist: If True automatically makes a second request
-            to beefweb to retrieve the playlist info for the new playlist.  If
-            the index argument is not None this will not work and None will be
-            returned instead.
-        :returns: A PlaylistInfo namedtuple if return_playlist is True and
-            index is None, otherwise will return None
+            to beefweb to retrieve the playlist info for the new playlist.
+            There is a small chance that the incorrect playlist will be
+            returned during the second request (i.e. if a playlist is added or
+            removed between api calls).  In this case an AssertionError will
+            be raised.
+        :returns: A PlaylistInfo namedtuple if return_playlist is True else
+            None
         """
         params = {}
         if index is not None:
@@ -360,11 +362,18 @@ class AsyncClient:
         if title is not None:
             params["title"] = title
         await self._request(ADD_PLAYLIST, params=params)
+
+        playlist = None
         if return_playlist and index is None:
-            return (await self.get_playlists()).find_playlist(title)
+            playlist = (await self.get_playlists()).find_playlist(
+                title=title, find_last=True
+            )
         elif return_playlist:
-            return (await self.get_playlists())[index]
-        return None
+            playlist = (await self.get_playlists())[index]
+
+        if playlist and playlist.title != title:
+            raise AssertionError("Wrong playlist returned from request!")
+        return playlist
 
     async def set_playlist_title(
         self, playlist_ref: PlaylistRef, title: str
@@ -387,7 +396,7 @@ class AsyncClient:
         :param playlist_ref: The PlaylistInfo object, ID, or numerical
             playlist index.
         """
-        paths = {"playlist_ref": playlist_ref}
+        paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         return await self._request(REMOVE_PLAYLIST, paths=paths)
 
     async def move_playlist(

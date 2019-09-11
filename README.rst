@@ -144,6 +144,8 @@ The asynchronous event listener can automatically execute callbacks when certain
         print("From the last player state object saved to listener.  Active item is:")
         print(listener.player_state.active_item)
         print(f"Estimated playback position: {listener.player_state.estimated_position_mmss()}")
+        for playlist in listener.playlists:
+            print(playlist)
 
         await asyncio.sleep(10)
 

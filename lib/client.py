@@ -368,7 +368,7 @@ class Client:
             column_map = self._default_column_map
         params = {
             "playlistItems": "true",
-            "plref": playlist_ref,
+            "plref": param_value_to_str(playlist_ref),
             "plrange": f"{offset}:{count}",
             "plcolumns": param_value_to_str(column_map),
         }
@@ -385,7 +385,7 @@ class Client:
         :param playlist_ref: The PlaylistInfo object, ID, or numerical
             playlist index.
         """
-        params = {"current": playlist_ref}
+        params = {"current": param_value_to_str(playlist_ref)}
         return self._request(SET_CURRENT_PLAYLIST, params=params)
 
     def add_playlist(
@@ -399,32 +399,35 @@ class Client:
 
         :param title: The title of the playlist.
         :param index: The numerical index to insert the new playlist.
-            None = last position.  The return_playlist argument must be set to
-            False if using this argument.
+            None = last position.
         :param return_playlist: If True automatically makes a second request
             to beefweb to retrieve the playlist info for the new playlist.
-            The index argument must equal None otherwise a NotImplementedError
-            will be raised.
+            There is a small chance that the incorrect playlist will be
+            returned during the second request (i.e. if a playlist is added or
+            removed between api calls).  In this case an AssertionError will
+            be raised.
         :returns: A PlaylistInfo namedtuple if return_playlist is True else
             None
         """
-        # if return_playlist and index is not None:
-        #     raise NotImplementedError(
-        #         "The index argument must be None when return_playlist is True"
-        #     )
+
         params = {}
         if index is not None:
             params["index"] = index
         if title is not None:
             params["title"] = title
         self._request(ADD_PLAYLIST, params=params)
+
+        playlist = None
         if return_playlist and index is None:
-            return self.get_playlists().find_playlist(
+            playlist = self.get_playlists().find_playlist(
                 title=title, find_last=True
             )
         elif return_playlist:
-            return self.get_playlists()[index]
-        return None
+            playlist = self.get_playlists()[index]
+
+        if playlist and playlist.title != title:
+            raise AssertionError("Wrong playlist returned from request!")
+        return playlist
 
     def set_playlist_title(
         self, playlist_ref: PlaylistRef, title: str

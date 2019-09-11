@@ -50,11 +50,10 @@ class ClientTest(asynctest.TestCase):
         self.assertEqual(state.volume.value, vol)
 
     async def test_play_states(self):
-        await self.beefweb.add_playlist(title=self.plist1_title)
-        playlist_id = (await self.beefweb.find_playlist(self.plist1_title)).id
-        await self.beefweb.set_current_playlist(playlist_id)
-        await self.beefweb.add_playlist_items(playlist_id, [self.media_path])
-        await self.beefweb.sort_playlist_items(playlist_id, "%tracknumber%")
+        playlist = await self.beefweb.add_playlist(title=self.plist1_title)
+        await self.beefweb.set_current_playlist(playlist)
+        await self.beefweb.add_playlist_items(playlist, [self.media_path])
+        await self.beefweb.sort_playlist_items(playlist, "%tracknumber%")
 
         await self.beefweb.play()
         await sleep(DEFAULT_TIME_DELAY)
@@ -73,7 +72,7 @@ class ClientTest(asynctest.TestCase):
         state = await self.beefweb.get_player_state()
         self.assertEqual(state.playback_state, "stopped")
 
-        await self.beefweb.play_specific(playlist_id, 0)
+        await self.beefweb.play_specific(playlist, 0)
         await sleep(DEFAULT_TIME_DELAY)
         state = await self.beefweb.get_player_state()
         self.assertEqual(state.active_item.index, 0)
@@ -94,9 +93,7 @@ class ClientTest(asynctest.TestCase):
         state = await self.beefweb.get_player_state()
         self.assertEqual(state.playback_state, "playing")
 
-        await self.beefweb.remove_playlist(playlist_id)
-
-    async def test_find_playlist(self):
+    async def test_add_and_find_playlist(self):
         await self.beefweb.add_playlist(title=self.plist1_title)
         playlist = await self.beefweb.find_playlist(title=self.plist1_title)
         self.assertEqual(playlist.title, self.plist1_title)
@@ -104,124 +101,132 @@ class ClientTest(asynctest.TestCase):
         playlist = await self.beefweb.find_playlist(search_id=playlist.id)
         self.assertEqual(playlist.title, self.plist1_title)
 
-        await self.beefweb.remove_playlist(playlist.id)
+        await self.beefweb.remove_playlist(playlist)
+
+        playlist = await self.beefweb.add_playlist(title=self.plist1_title)
+        self.assertEqual(playlist.title, self.plist1_title)
+        playlist2 = await self.beefweb.add_playlist(title=self.plist2_title)
+        self.assertEqual(playlist2.title, self.plist2_title)
+
+        # insert 3rd playlist between other two
+        num_playlists = len(await self.beefweb.get_playlists())
+        playlist3 = await self.beefweb.add_playlist(
+            title=self.plist3_title, index=num_playlists - 1
+        )
+        self.assertEqual(playlist3.title, self.plist3_title)
+
+        await self.beefweb.remove_playlist(playlist)
+        await self.beefweb.remove_playlist(playlist2)
+        playlist = await self.beefweb.add_playlist(
+            title=self.plist1_title, return_playlist=False
+        )
+        self.assertIsNone(playlist)
+        playlist = await self.beefweb.add_playlist(
+            title=self.plist2_title, index=-1, return_playlist=False
+        )
+        self.assertIsNone(playlist)
 
     async def test_get_playlist_items(self):
-        await self.beefweb.add_playlist(title=self.plist1_title)
-        playlist_id = (await self.beefweb.find_playlist(self.plist1_title)).id
-        await self.beefweb.set_current_playlist(playlist_id)
-        await self.beefweb.add_playlist_items(playlist_id, [self.media_path])
-        await self.beefweb.sort_playlist_items(playlist_id, "%tracknumber%")
+        playlist = await self.beefweb.add_playlist(title=self.plist1_title)
+        await self.beefweb.set_current_playlist(playlist)
+        await self.beefweb.add_playlist_items(playlist, [self.media_path])
+        await self.beefweb.sort_playlist_items(playlist, "%tracknumber%")
 
         colmap = {"%title%": "title"}
         items = await self.beefweb.get_playlist_items(
-            playlist_id, offset=1, count=2, column_map=colmap
+            playlist, offset=1, count=2, column_map=colmap
         )
         self.assertEqual(len(items), 2)
         self.assertEqual(len(items[0]), 1)
         self.assertEqual(items[0].title, "This is test track 2")
         self.assertEqual(items[1].title, "This is test track 3")
 
-        await self.beefweb.remove_playlist(playlist_id)
-
     async def test_set_current_playlist(self):
-        await self.beefweb.add_playlist(title=self.plist1_title)
-        await self.beefweb.add_playlist(title=self.plist2_title)
-        playlist1 = await self.beefweb.find_playlist(self.plist1_title)
-        playlist2 = await self.beefweb.find_playlist(self.plist2_title)
+        playlist1 = await self.beefweb.add_playlist(title=self.plist1_title)
+        playlist2 = await self.beefweb.add_playlist(title=self.plist2_title)
 
-        await self.beefweb.set_current_playlist(playlist1.id)
+        await self.beefweb.set_current_playlist(playlist1)
         playlist = await self.beefweb.find_playlist(playlist1.title)
         self.assertTrue(playlist.is_current)
 
-        await self.beefweb.set_current_playlist(playlist2.index)
+        await self.beefweb.set_current_playlist(playlist2)
         playlist = await self.beefweb.find_playlist(playlist2.title)
         self.assertTrue(playlist.is_current)
 
-        await self.beefweb.remove_playlist(playlist1.id)
-        await self.beefweb.remove_playlist(playlist2.id)
-
     async def test_playlist_item_manipulation(self):
-        await self.beefweb.add_playlist(title=self.plist1_title)
-        await self.beefweb.add_playlist(title=self.plist2_title)
-        await self.beefweb.add_playlist(title=self.plist3_title)
-        playlist1 = await self.beefweb.find_playlist(self.plist1_title)
-        playlist2 = await self.beefweb.find_playlist(self.plist2_title)
-        playlist3 = await self.beefweb.find_playlist(self.plist3_title)
-        await self.beefweb.set_current_playlist(playlist1.id)
-        await self.beefweb.add_playlist_items(playlist1.id, [self.media_path])
-        await self.beefweb.sort_playlist_items(playlist1.id, "%tracknumber%")
+        playlist1 = await self.beefweb.add_playlist(title=self.plist1_title)
+        playlist2 = await self.beefweb.add_playlist(title=self.plist2_title)
+        playlist3 = await self.beefweb.add_playlist(title=self.plist3_title)
+        await self.beefweb.set_current_playlist(playlist1)
+        await self.beefweb.add_playlist_items(playlist1, [self.media_path])
+        await self.beefweb.sort_playlist_items(playlist1, "%tracknumber%")
 
         await self.beefweb.copy_playlist_items(
-            playlist_ref=playlist1.id, item_indices=(1, 2), dest_index=1
+            playlist_ref=playlist1, item_indices=(1, 2), dest_index=1
         )
-        items = await self.beefweb.get_playlist_items(playlist1.id)
+        items = await self.beefweb.get_playlist_items(playlist1)
         self.assertEqual(len(items), 5)
         self.assertEqual(items[3].title, "This is test track 2")
         self.assertEqual(items[4].title, "This is test track 3")
 
         await self.beefweb.move_playlist_items(
-            playlist_ref=playlist1.id, item_indices=(0, 3), dest_index=4
+            playlist_ref=playlist1, item_indices=(0, 3), dest_index=4
         )
-        items = await self.beefweb.get_playlist_items(playlist1.id)
+        items = await self.beefweb.get_playlist_items(playlist1)
         self.assertEqual(len(items), 5)
         self.assertEqual(items[2].title, "This is test track 1")
         self.assertEqual(items[3].title, "This is test track 2")
 
         await self.beefweb.copy_between_playlists(
-            source_playlist=playlist1.id,
-            dest_playlist=playlist2.id,
+            source_playlist=playlist1,
+            dest_playlist=playlist2,
             item_indices=[0, 1],
         )
         await self.beefweb.copy_between_playlists(
-            source_playlist=playlist1.id,
-            dest_playlist=playlist2.id,
+            source_playlist=playlist1,
+            dest_playlist=playlist2,
             item_indices=[2],
             dest_index=1,
         )
-        items = await self.beefweb.get_playlist_items(playlist2.id)
+        items = await self.beefweb.get_playlist_items(playlist2)
         self.assertEqual(len(items), 3)
         self.assertEqual(items[0].title, "This is test track 2")
         self.assertEqual(items[1].title, "This is test track 1")
         self.assertEqual(items[2].title, "This is test track 3")
 
         await self.beefweb.move_between_playlists(
-            source_playlist=playlist2.id,
-            dest_playlist=playlist3.id,
+            source_playlist=playlist2,
+            dest_playlist=playlist3,
             item_indices=(1, 2),
         )
-        items = await self.beefweb.get_playlist_items(playlist3.id)
+        items = await self.beefweb.get_playlist_items(playlist3)
         self.assertEqual(len(items), 2)
         self.assertEqual(items[0].title, "This is test track 1")
         self.assertEqual(items[1].title, "This is test track 3")
         await self.beefweb.move_between_playlists(
-            source_playlist=playlist2.id,
-            dest_playlist=playlist3.id,
+            source_playlist=playlist2,
+            dest_playlist=playlist3,
             item_indices=(0,),
             dest_index=0,
         )
-        items = await self.beefweb.get_playlist_items(playlist3.id)
+        items = await self.beefweb.get_playlist_items(playlist3)
         self.assertEqual(len(items), 3)
         self.assertEqual(items[0].title, "This is test track 2")
 
         await self.beefweb.sort_playlist_items(
-            playlist_ref=playlist3.id, by="%track number%", desc=True
+            playlist_ref=playlist3, by="%track number%", desc=True
         )
-        items = await self.beefweb.get_playlist_items(playlist3.id)
+        items = await self.beefweb.get_playlist_items(playlist3)
         self.assertEqual(items[0].title, "This is test track 3")
         self.assertEqual(items[1].title, "This is test track 2")
         self.assertEqual(items[2].title, "This is test track 1")
 
         await self.beefweb.remove_playlist_items(
-            playlist_ref=playlist3.id, item_indices=(0, 2)
+            playlist_ref=playlist3, item_indices=(0, 2)
         )
-        items = await self.beefweb.get_playlist_items(playlist3.id)
+        items = await self.beefweb.get_playlist_items(playlist3)
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0].title, "This is test track 2")
-
-        await self.beefweb.remove_playlist(playlist1.id)
-        await self.beefweb.remove_playlist(playlist2.id)
-        await self.beefweb.remove_playlist(playlist3.id)
 
     async def test_get_browser(self):
         roots = await self.beefweb.get_browser_roots()
