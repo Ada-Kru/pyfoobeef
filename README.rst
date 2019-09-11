@@ -62,7 +62,7 @@ Synchronous client:
     print(status.volume)
 
 
-Asynchronous client:
+The asynchronous client follows a very similar format:
 
 .. code-block:: python
 
@@ -100,7 +100,7 @@ Asynchronous client:
     asyncio.run(example())
 
 
-Event listener:
+The asynchronous event listener can automatically execute callbacks when certain events are received or the media players state can be determined from the EventListener object's attributes:
 
 .. code-block:: python
 
@@ -109,12 +109,12 @@ Event listener:
 
 
     def print_active_item(state):
-        print("Active Item:")
+        print("From player state callback.  Active item is:")
         print(state.active_item)
 
 
     def print_playlists(playlists):
-        print("Current Playlists:")
+        print("From playlists callback.  Current playlists:")
         for playlist in playlists:
             print(playlist)
 
@@ -137,7 +137,15 @@ Event listener:
         # Start listening for events from the player.
         await listener.connect(reconnect_time=1)
 
-        await asyncio.sleep(20)
+        await asyncio.sleep(10)
+
+        # The last received information about the player state and playlists
+        # can be accessed from the listener object itself.
+        print("From the last player state object saved to listener.  Active item is:")
+        print(listener.player_state.active_item)
+        print(f"Estimated playback position: {listener.player_state.estimated_position_mmss()}")
+
+        await asyncio.sleep(10)
 
         await listener.disconnect()
 

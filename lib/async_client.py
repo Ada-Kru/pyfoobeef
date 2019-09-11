@@ -335,22 +335,24 @@ class AsyncClient:
         params = {"current": param_value_to_str(playlist_ref)}
         return await self._request(SET_CURRENT_PLAYLIST, params=params)
 
-    async def add_playlist(
+    def add_playlist(
         self,
+        title: str,
         index: Optional[int] = None,
-        title: Optional[str] = None,
         return_playlist: Optional[bool] = True,
     ) -> Optional[PlaylistInfo]:
         """
         Create a new playlist.
 
+        :param title: The title of the playlist.
         :param index: The numerical index to insert the new playlist.
             None = last position.
-        :param title: The title of the playlist.
-        :param return_playlist: If True makes a second request to beefweb to
-            retrieve the playlist info for the new playlist.
-        :returns: A PlaylistInfo namedtuple if return_playlist is True else
-            None
+        :param return_playlist: If True automatically makes a second request
+            to beefweb to retrieve the playlist info for the new playlist.  If
+            the index argument is not None this will not work and None will be
+            returned instead.
+        :returns: A PlaylistInfo namedtuple if return_playlist is True and
+            index is None, otherwise will return None
         """
         params = {}
         if index is not None:
@@ -358,8 +360,10 @@ class AsyncClient:
         if title is not None:
             params["title"] = title
         await self._request(ADD_PLAYLIST, params=params)
-        if return_playlist:
+        if return_playlist and index is None:
             return (await self.get_playlists()).find_playlist(title)
+        elif return_playlist:
+            return (await self.get_playlists())[index]
         return None
 
     async def set_playlist_title(

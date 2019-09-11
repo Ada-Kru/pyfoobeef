@@ -390,29 +390,40 @@ class Client:
 
     def add_playlist(
         self,
+        title: str,
         index: Optional[int] = None,
-        title: Optional[str] = None,
         return_playlist: Optional[bool] = True,
     ) -> Optional[PlaylistInfo]:
         """
         Create a new playlist.
 
-        :param index: The numerical index to insert the new playlist.
-            None = last position.
         :param title: The title of the playlist.
-        :param return_playlist: If True makes a second request to beefweb to
-            retrieve the playlist info for the new playlist.
+        :param index: The numerical index to insert the new playlist.
+            None = last position.  The return_playlist argument must be set to
+            False if using this argument.
+        :param return_playlist: If True automatically makes a second request
+            to beefweb to retrieve the playlist info for the new playlist.
+            The index argument must equal None otherwise a NotImplementedError
+            will be raised.
         :returns: A PlaylistInfo namedtuple if return_playlist is True else
             None
         """
+        # if return_playlist and index is not None:
+        #     raise NotImplementedError(
+        #         "The index argument must be None when return_playlist is True"
+        #     )
         params = {}
         if index is not None:
             params["index"] = index
         if title is not None:
             params["title"] = title
         self._request(ADD_PLAYLIST, params=params)
-        if return_playlist:
-            return self.get_playlists().find_playlist(title)
+        if return_playlist and index is None:
+            return self.get_playlists().find_playlist(
+                title=title, find_last=True
+            )
+        elif return_playlist:
+            return self.get_playlists()[index]
         return None
 
     def set_playlist_title(
