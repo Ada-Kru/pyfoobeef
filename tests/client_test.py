@@ -3,12 +3,9 @@ import unittest
 from time import sleep
 from uuid import uuid1
 from pathlib import Path
-from sys import path as sys_path
-
-sys_path.insert(0, "..")
-
-from lib.client import Client, RequestError
-from lib.models import PlayerState
+from pyfoobeef import Client
+from pyfoobeef.exceptions import RequestError
+from pyfoobeef.models import PlayerState
 
 
 DEFAULT_TIME_DELAY = 0.5
@@ -21,7 +18,7 @@ class ClientTest(unittest.TestCase):
         self.plist2_title = str(uuid1())
         self.plist3_title = str(uuid1())
         module_dir = Path(__file__).absolute().parent.parent
-        self.media_path = str(module_dir / "test_media")
+        self.media_path = str((module_dir / "test_media").resolve())
 
     def test_get_player_state(self):
         state = self.beefweb.get_player_state()

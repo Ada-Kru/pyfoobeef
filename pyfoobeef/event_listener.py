@@ -7,8 +7,9 @@ from datetime import timedelta
 from collections import namedtuple
 from urllib.parse import urlencode
 from typing import Optional, Callable
+from .types import PlaylistRef, ColumnsMap
 from .models import Playlists, PlaylistItems, PlayerState
-from .client import param_value_to_str, PlaylistRef, ColumnsMap
+from .helper_funcs import param_value_to_str
 
 
 InfoHandler = namedtuple(

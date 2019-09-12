@@ -1,5 +1,7 @@
 import aiohttp
 from typing import Optional
+from .types import PlaylistRef, Paths, ItemIndices, ColumnsMap
+from .helper_funcs import param_value_to_str
 from .endpoints import (
     GET_PLAYER_STATE,
     SET_PLAYER_STATE,
@@ -37,14 +39,7 @@ from .models import (
     PlaylistItems,
     PlayerState,
 )
-from .client import (
-    param_value_to_str,
-    RequestError,
-    PlaylistRef,
-    Paths,
-    ItemIndices,
-    ColumnsMap,
-)
+from .exceptions import RequestError
 
 
 class AsyncClient:

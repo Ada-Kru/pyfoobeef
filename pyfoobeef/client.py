@@ -1,7 +1,9 @@
 import json
 import urllib3
 from urllib.parse import urlencode
-from typing import List, Optional, Tuple, Union, Set, Dict
+from typing import Optional
+from .types import PlaylistRef, Paths, ItemIndices, ColumnsMap
+from .helper_funcs import param_value_to_str
 from .endpoints import (
     GET_PLAYER_STATE,
     SET_PLAYER_STATE,
@@ -39,56 +41,7 @@ from .models import (
     PlaylistItems,
     PlayerState,
 )
-
-
-PlaylistRef = Union[str, int, PlaylistInfo]
-Paths = Union[List[str], Tuple[str]]
-ItemIndices = Union[List[int], Tuple[int]]
-ColumnsMap = Union[Dict[str, str], Set[str], List[str], Tuple[str]]
-
-
-def param_value_to_str(value):
-    val_type = type(value)
-    if val_type is bool:
-        return "true" if value else "false"
-    if val_type is list or val_type is tuple:
-        return ",".join(value)
-    if val_type is dict or val_type is set:
-        return ",".join(value.keys())
-    if val_type in (int, float):
-        return str(value)
-    if val_type == PlaylistInfo:
-        return value.id
-    if val_type is str:
-        return value
-
-
-# def kwargs_to_params(kwargs, kw_map):
-#     params = {}
-#     for key, val in kwargs.items():
-#         if key in kw_map:
-#             params[kw_map[key]] = param_value_to_str(val)
-#     return params
-
-
-class RequestError(Exception):
-    """Exception for errors relating to making requests to beefweb."""
-
-    def __init__(self, response_code, response_data):
-        """
-        Init.
-
-        :param response_code: The HTTP status code returned by the request.
-        :param response_data: The parsed data from beefwebs JSON response.
-        """
-        self.response_code = response_code
-        self.response_data = response_data
-
-    def __str__(self):
-        return (
-            f"HTML error code: {self.response_code}. "
-            f"Response: {self.response_data}"
-        )
+from .exceptions import RequestError
 
 
 class Client:
@@ -409,7 +362,6 @@ class Client:
         :returns: A PlaylistInfo namedtuple if return_playlist is True else
             None
         """
-
         params = {}
         if index is not None:
             params["index"] = index

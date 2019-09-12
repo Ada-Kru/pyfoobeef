@@ -3,13 +3,9 @@ import asynctest
 from asyncio import sleep
 from uuid import uuid1
 from pathlib import Path
-from sys import path as sys_path
-
-sys_path.insert(0, "..")
-
-from lib.async_client import AsyncClient, RequestError
-from lib.event_listener import EventListener
-from lib.models import PlayerState, Playlists, PlaylistItems
+from pyfoobeef import AsyncClient, EventListener
+from pyfoobeef.exceptions import RequestError
+from pyfoobeef.models import PlayerState, Playlists, PlaylistItems
 
 
 DEFAULT_TIME_DELAY = 0.5
@@ -28,7 +24,7 @@ class ClientTest(asynctest.TestCase):
         self.beefweb = AsyncClient("localhost", 6980)
         self.plist_title = str(uuid1())
         module_dir = Path(__file__).absolute().parent.parent
-        self.media_path = str(module_dir / "test_media")
+        self.media_path = str((module_dir / "test_media").resolve())
 
         await self.beefweb.add_playlist(title=self.plist_title)
         playlist_id = (await self.beefweb.find_playlist(self.plist_title)).id
