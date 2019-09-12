@@ -3,26 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pyfoobeef's documentation!
-=====================================
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-
 =========
 pyfoobeef
 =========
+
 Allows control of the Foobar2000 and DeaDBeeF media players through the `beefweb <https://github.com/hyperblast/beefweb>`_ plugin API.
 
 * Both asynchronous and synchronous clients
@@ -30,6 +14,13 @@ Allows control of the Foobar2000 and DeaDBeeF media players through the `beefweb
 * For Python 3.6 and up
 * MIT License
 
+
+Classes
+-------
+.. toctree::
+   :maxdepth: 3
+
+   source/pyfoobeef
 
 Installation
 ------------
@@ -56,7 +47,9 @@ Synchronous client:
     new_playlist = player.add_playlist(title="My New Playlist")
     player.set_current_playlist(new_playlist)
 
-    # Add items to the playlist.
+    # Add items to the playlist.  Note that paths including drive letters
+    # are case sensitive even on Windows due to limitations of the beefweb
+    # plugin (so r"c:\Music" would not work here).
     player.add_playlist_items(new_playlist, items=[r"C:\Music"])
 
     player.play()
@@ -99,7 +92,9 @@ The asynchronous client follows a very similar format:
         new_playlist = await player.add_playlist(title="My New Playlist")
         await player.set_current_playlist(new_playlist)
 
-        # Add items to the playlist.
+        # Add items to the playlist.  Note that paths including drive letters
+        # are case sensitive even on Windows due to limitations of the beefweb
+        # plugin (so r"c:\Music" would not work here).
         await player.add_playlist_items(new_playlist, items=[r"C:\Music"])
 
         # sort items by length
@@ -163,9 +158,11 @@ The asynchronous event listener can automatically execute callbacks when certain
 
         # The last received information about the player state and playlists
         # can be accessed from the listener object itself.
-        print("From the last player state object saved to listener.  Active item is:")
+        print("From the last player state object saved to listener."
+              "  Active item is:")
         print(listener.player_state.active_item)
-        print(f"Estimated playback position: {listener.player_state.estimated_position_mmss()}")
+        print("Estimated playback position: ",
+              listener.player_state.estimated_position_mmss())
         for playlist in listener.playlists:
             print(playlist)
 

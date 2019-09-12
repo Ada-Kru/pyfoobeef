@@ -10,56 +10,65 @@ from .helper_funcs import (
 
 
 IndexItem = namedtuple("IndexItem", ["index", "item"])
-IndexItem.__doc__ = """Represents the index of an item in the media player and
-                       its returned data fields.
+"""
+Represents the index of an item in the media player and
+its returned data fields.
 
-                       :param int index: Index of the item in the media player
-                       :param Columns item: The returned data fields from the
-                           request"""
+:param int index: Index of the item in the media player
+:param Columns item: The returned data fields from the
+    request.
+"""
 
 PlaybackMode = namedtuple("PlaybackMode", ["number", "mode"])
-PlaybackMode.__doc__ = """Represents the possible playback modes returned from
-                          the media player.
+"""
+Represents the possible playback modes returned from
+the media player.
 
-                          :param int number: The numerical index of this mode.
-                          :param str mode: The name of this mode."""
+:param int number: The numerical index of this mode.
+:param str mode: The name of this mode.
+"""
 
 PlayerInfo = namedtuple(
     "PlayerInfo", ["name", "title", "version", "plugin_version"]
 )
-PlayerInfo.__doc__ = """Represents information about the media player.
+"""
+Represents information about the media player.
 
-                          :param str name: The media player name.
-                          :param str title: The media player title.
-                          :param str version: The media player version number.
-                          :param str plugin_version: The beefweb version."""
+:param str name: The media player name.
+:param str title: The media player title.
+:param str version: The media player version number.
+:param str plugin_version: The beefweb version.
+"""
 
 PlaylistInfo = namedtuple(
     "PlaylistInfo",
     ["id", "index", "title", "is_current", "item_count", "total_time"],
 )
-PlaylistInfo.__doc__ = """Represents information about a playlist.
+"""
+Represents information about a playlist.
 
-                          :param str id: Playlist ID.
-                          :param int index: The numerical playlist index.
-                          :param bool is_current: If the playlist is currently
-                            selected.
-                          :param int item_count: The total number of items in
-                            the playlist.
-                          :param int total_time: The total playlist time in
-                            seconds.
-                          """
+:param str id: Playlist ID.
+:param int index: The numerical playlist index.
+:param bool is_current: If the playlist is currently
+    selected.
+:param int item_count: The total number of items in
+    the playlist.
+:param int total_time: The total playlist time in
+    seconds.
+"""
 
 Volume = namedtuple("Volume", ["type", "min", "max", "value", "is_muted"])
-Volume.__doc__ = """"Represents information about the media player
-                           volume levels.
+"""
+Represents information about the media player
+volume levels.
 
-                           :param str type: The type of volume level in use
-                            (i.e. "db")
-                           :param int min: The minimum volume level.
-                           :param int max: The maximum volume level.
-                           :param int value: The current volume level.
-                           :param bool is_muted: Player mute status."""
+:param str type: The type of volume level in use
+    (i.e. "db")
+:param float min: The minimum volume level.
+:param float max: The maximum volume level.
+:param float value: The current volume level.
+:param bool is_muted: Player mute status.
+"""
 
 
 class ActiveItem:
@@ -125,7 +134,8 @@ class Columns:
     Can be iterated over, subscripted, or addressed by attributes
     i.e. (columns.title or columns['title']).
 
-    Addressing by attributes only works if the name used is not reserved.
+    Addressing by attributes only works if the name used is not a reserved
+    keyword.
     """
 
     _reserved_attributes = set(

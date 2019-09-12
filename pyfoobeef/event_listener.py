@@ -182,7 +182,7 @@ class EventListener:
 
     async def connect(self, reconnect_time: Optional[float] = 5):
         """
-        Connect to the beefweb eventsource.
+        Connect to the beefweb eventsource and begin listening for events.
 
         :param reconnect_time: The number of seconds to wait between
             reconnection attempts.

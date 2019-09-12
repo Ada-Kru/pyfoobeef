@@ -1,6 +1,9 @@
 pyfoobeef package
 =================
 
+.. toctree::
+   :maxdepth: 4
+
 
 The ``AsyncClient`` Class
 ------------------------------
