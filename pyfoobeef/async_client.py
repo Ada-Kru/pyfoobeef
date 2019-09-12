@@ -43,7 +43,16 @@ from .exceptions import RequestError
 
 
 class AsyncClient:
-    """Asynchronous class for interacting with the beefweb plugin."""
+    """
+    Asynchronous class for interacting with the beefweb plugin.
+
+    :param base_url: The base URL for beefweb's server.  i.e. "localhost"
+    :param port: The port number of beefweb's server.
+    :param username: The username to use if authentification is enabled in
+        beefweb.
+    :param password: The password to use if authentification is enabled in
+        beefweb.
+    """
 
     _default_column_map = {
         "%album artist%": "album_artist",
@@ -64,16 +73,6 @@ class AsyncClient:
         username: Optional[str] = None,
         password: Optional[str] = None,
     ):
-        """
-        Init.
-
-        :param base_url: The base URL for beefweb's server.  i.e. "localhost"
-        :param port: The port number of beefweb's server.
-        :param username: The username to use if authentification is enabled in
-            beefweb.
-        :param password: The password to use if authentification is enabled in
-            beefweb.
-        """
         if not base_url.lower().startswith("http"):
             base_url = "http://" + base_url
         self.base_url = base_url

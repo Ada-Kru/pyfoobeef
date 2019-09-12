@@ -1,7 +1,8 @@
-lib
-===
+pyfoobeef
+=========
 
 .. toctree::
    :maxdepth: 4
 
-   lib
+   pyfoobeef
+   setup
