@@ -7,7 +7,7 @@ from datetime import timedelta
 from collections import namedtuple
 from urllib.parse import urlencode
 from typing import Optional, Callable
-from .types import PlaylistRef, ColumnsMap
+from .type_helpers import PlaylistRef, ColumnsMap
 from .models import Playlists, PlaylistItems, PlayerState
 from .helper_funcs import param_value_to_str
 

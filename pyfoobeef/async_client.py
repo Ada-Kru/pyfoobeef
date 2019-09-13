@@ -1,6 +1,6 @@
 import aiohttp
 from typing import Optional
-from .types import PlaylistRef, Paths, ItemIndices, ColumnsMap
+from .type_helpers import PlaylistRef, Paths, ItemIndices, ColumnsMap
 from .helper_funcs import param_value_to_str
 from .endpoints import (
     GET_PLAYER_STATE,

@@ -1,6 +1,3 @@
-import pyfoobeef.models as models
-
-
 def param_value_to_str(value):
     val_type = type(value)
     if val_type is bool:
@@ -11,9 +8,9 @@ def param_value_to_str(value):
         return ",".join(value.keys())
     if val_type in (int, float):
         return str(value)
-    if val_type == models.PlaylistInfo:
+    if val_type.__name__ == "PlaylistInfo":
         return value.id
-    if val_type == models.FileSystemEntry:
+    if val_type.__name__ == "FileSystemEntry":
         return value.path
     if val_type is str:
         return value
