@@ -18,7 +18,7 @@ Allows control of the Foobar2000 and DeaDBeeF media players through the `beefweb
 Classes
 -------
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
 
    source/pyfoobeef
 
@@ -139,7 +139,7 @@ The asynchronous event listener can automatically execute callbacks when certain
     async def example():
         listener = pyfoobeef.EventListener(
             base_url="localhost",
-            port=6980,
+            port=8880,
             active_item_column_map={
                 "%artist%": "artist",
                 "%title%": "title",

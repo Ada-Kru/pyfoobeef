@@ -1,5 +1,5 @@
 from collections import namedtuple
-from keyword import iskeyword
+from keyword import iskeyword as _is_keyword
 from typing import Optional, Union, List
 from time import time
 from .helper_funcs import (
@@ -149,7 +149,7 @@ class Columns:
             attribute_name = column_map[key]
             if (
                 attribute_name not in self._reserved_attributes
-                and not iskeyword(attribute_name)
+                and not _is_keyword(attribute_name)
             ):
                 setattr(self, attribute_name, returned_columns[i])
 

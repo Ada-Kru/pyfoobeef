@@ -68,14 +68,24 @@ html_theme_options = {
     "bgcolor": "#DDDDDD",
     "linkcolor": "FFEA00",
     "visitedlinkcolor": "DDC800",
-    "codebgcolor": "#EEEEEE",
+    "codebgcolor": "#242424",
+    "codetextcolor": "#DDDDDD",
     "relbarbgcolor": "#222",
     "headbgcolor": "#222",
-    "headtextcolor": "#EEEEEE"
-    }
-pygments_style = "tango"
+    "headtextcolor": "#EEEEEE",
+}
+pygments_style = "monokai"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+html_sidebars = {
+    "**": [
+        "globaltoc.html",
+        "relations.html",
+        "sourcelink.html",
+        "searchbox.html",
+    ]
+}
