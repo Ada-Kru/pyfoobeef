@@ -129,6 +129,14 @@ class ClientTest(asynctest.TestCase):
         )
         self.assertIsNone(playlist)
 
+    async def test_add_playlist_items(self):
+        playlist = await self.beefweb.add_playlist(title=self.plist1_title)
+        entries = await self.beefweb.get_browser_entries(self.media_path)
+
+        await self.beefweb.add_playlist_items(playlist, entries)
+        playlist = await self.beefweb.find_playlist(search_id=playlist.id)
+        self.assertTrue(playlist.item_count == 3)
+
     async def test_get_playlist_items(self):
         playlist = await self.beefweb.add_playlist(title=self.plist1_title)
         await self.beefweb.set_current_playlist(playlist)

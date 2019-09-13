@@ -129,6 +129,14 @@ class ClientTest(unittest.TestCase):
         )
         self.assertIsNone(playlist)
 
+    def test_add_playlist_items(self):
+        playlist = self.beefweb.add_playlist(title=self.plist1_title)
+        entries = self.beefweb.get_browser_entries(self.media_path)
+
+        self.beefweb.add_playlist_items(playlist, entries)
+        playlist = self.beefweb.find_playlist(search_id=playlist.id)
+        self.assertTrue(playlist.item_count == 3)
+
     def test_get_playlist_items(self):
         playlist = self.beefweb.add_playlist(title=self.plist1_title)
         self.beefweb.set_current_playlist(playlist)

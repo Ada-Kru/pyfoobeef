@@ -429,8 +429,8 @@ class FileSystemEntry:
 
     def __repr__(self):
         return (
-            f'FileSystemEntry {"File" if self._is_file else "Directory"}:'
-            f' "{self.path}"'
+            f"FileSystemEntry {'File' if self._is_file else 'Directory'}:"
+            f" '{self.path}'"
         )
 
     def __str__(self):

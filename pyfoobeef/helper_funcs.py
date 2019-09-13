@@ -13,6 +13,8 @@ def param_value_to_str(value):
         return str(value)
     if val_type == models.PlaylistInfo:
         return value.id
+    if val_type == models.FileSystemEntry:
+        return value.path
     if val_type is str:
         return value
 

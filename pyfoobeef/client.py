@@ -40,6 +40,7 @@ from .models import (
     PlaylistInfo,
     PlaylistItems,
     PlayerState,
+    FileSystemEntry,
 )
 from .exceptions import RequestError
 
@@ -443,7 +444,7 @@ class Client:
 
         :param path: The path to the directory or file to retrieve.  Note that
             even in windows the path including the drive letter is case
-            sensitive  (r"C:\Music" will work r"c:\Music" will not).
+            sensitive (r"C:\Music" will work, r"c:\Music" will not).
         :returns: A BrowserEntry object.
         """
         params = {}
@@ -463,9 +464,10 @@ class Client:
 
         :param playlist_ref: The PlaylistInfo object, ID, or numerical
             playlist index.
-        :param items: A list or tuple of strings containing the paths of
-            files and/or directories to add.  Note that the paths are case
-            sensitive even in windows.
+        :param items: A list or tuple of strings or FileSystemEntry objects
+            containing the paths of files and/or directories to add.  Note
+            that the paths including the drive letter are case sensitive even
+            in windows.
         :param dest_index: The index in the playlist to insert the new items.
         :param asynchronous: Set to True to make the request asynchronously
             and not wait for the items to finish processing before returning.
@@ -474,7 +476,7 @@ class Client:
         params = {"async": param_value_to_str(asynchronous)}
         if dest_index is not None:
             params["index"] = param_value_to_str(dest_index)
-        content = {"items": items}
+        content = {"items": [param_value_to_str(item) for item in items]}
         return self._request(
             ADD_PLAYLIST_ITEMS, params=params, paths=paths, body=content
         )
