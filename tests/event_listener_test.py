@@ -6,6 +6,7 @@ from pathlib import Path
 from pyfoobeef import AsyncClient, EventListener
 from pyfoobeef.exceptions import RequestError
 from pyfoobeef.models import PlayerState, Playlists, PlaylistItems
+from test_config import BASE_URL, PORT, TEST_USERNAME, TEST_PASSWORD
 
 
 DEFAULT_TIME_DELAY = 0.5
@@ -21,7 +22,12 @@ class Helper:
 
 class ClientTest(asynctest.TestCase):
     async def setUp(self):
-        self.beefweb = AsyncClient("localhost", 6980)
+        self.beefweb = AsyncClient(
+            base_url=BASE_URL,
+            port=PORT,
+            username=TEST_USERNAME,
+            password=TEST_PASSWORD,
+        )
         self.plist_title = str(uuid1())
         module_dir = Path(__file__).absolute().parent.parent
         self.media_path = str((module_dir / "test_media").resolve())
@@ -35,8 +41,8 @@ class ClientTest(asynctest.TestCase):
         await sleep(DEFAULT_TIME_DELAY)
 
         self.listener = EventListener(
-            base_url="localhost",
-            port=6980,
+            base_url=BASE_URL,
+            port=PORT,
             active_item_column_map={
                 "%artist%": "artist",
                 "%title%": "title",
@@ -51,8 +57,8 @@ class ClientTest(asynctest.TestCase):
             },
             offset=1,
             count=3,
-            username="test",
-            password="test",
+            username=TEST_USERNAME,
+            password=TEST_PASSWORD,
         )
 
     async def test_connection(self):

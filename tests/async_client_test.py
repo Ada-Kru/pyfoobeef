@@ -6,6 +6,7 @@ from pathlib import Path
 from pyfoobeef import AsyncClient
 from pyfoobeef.exceptions import RequestError
 from pyfoobeef.models import PlayerState
+from test_config import BASE_URL, PORT, TEST_USERNAME, TEST_PASSWORD
 
 
 DEFAULT_TIME_DELAY = 0.5
@@ -13,7 +14,12 @@ DEFAULT_TIME_DELAY = 0.5
 
 class ClientTest(asynctest.TestCase):
     async def setUp(self):
-        self.beefweb = AsyncClient("localhost", 6980)
+        self.beefweb = AsyncClient(
+            base_url=BASE_URL,
+            port=PORT,
+            username=TEST_USERNAME,
+            password=TEST_PASSWORD,
+        )
         self.plist1_title = str(uuid1())
         self.plist2_title = str(uuid1())
         self.plist3_title = str(uuid1())
