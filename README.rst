@@ -46,7 +46,7 @@ Synchronous client:
     # plugin (so r"c:\Music" would not work here).
     player.add_playlist_items(new_playlist, items=[r"C:\Music"])
 
-    player.play()
+    player.play_specific(new_playlist, 1)
     # Give the media player a bit of time to actually start playing.
     sleep(0.5)
 

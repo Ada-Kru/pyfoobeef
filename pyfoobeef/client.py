@@ -137,14 +137,12 @@ class Client:
 
         self._http.clear()
 
-        # print(url, response.status, response.data, body)
-        if response.status not in (200, 204):
+        if response.status not in (200, 202, 204):
             raise RequestError(
                 response.status, json.loads(response.data.decode("utf-8"))
             )
         if endpoint.model is not None:
             data = json.loads(response.data.decode("utf-8"))
-            # pprint(data)
             if not original_args or "column_map" not in original_args:
                 return endpoint.model(data)
             else:
@@ -227,12 +225,18 @@ class Client:
         )
 
     def play(self) -> None:
-        """Start playback."""
+        """
+        Start playback.
+
+        Note that the item played will be from the last playlist that an item
+        was played from even if another playlist is set as current.  Use the
+        play_specific method to play an item from a specific playlist.
+        """
         self._request(PLAY)
 
     def play_specific(self, playlist_ref: PlaylistRef, index: int) -> None:
         """
-        Start playback of a specific item.
+        Start playback of a specific item from a specific playlist.
 
         :param playlist_ref: The PlaylistInfo object, ID, or numerical index
             of the playlist that contains the media to play.
@@ -242,12 +246,24 @@ class Client:
         self._request(PLAY_SPECIFIC, paths=locals())
 
     def play_random(self) -> None:
-        """Play a random item from the active playlist."""
+        """
+        Play a random item from the last played playlist.
+
+        Note that the item played will be from the last playlist that an item
+        was played from even if another playlist is set as current.  Use the
+        play_specific method first to play an item from a specific playlist
+        before using this method.
+        """
         self._request(PLAY_RANDOM)
 
     def play_next(self, by: str = None) -> None:
         """
-        Play the next item in the active playlist.
+        Play the next item in the last played playlist.
+
+        Note that the item played will be from the last playlist that an item
+        was played from even if another playlist is set as current.  Use the
+        play_specific method first to play an item from a specific playlist
+        before using this method.
 
         :param by: The media player field used to determine what counts as
             next (i.e. "%title%").  None = use the items index in the
@@ -258,7 +274,12 @@ class Client:
 
     def play_previous(self, by: str = None) -> None:
         """
-        Play the previous item in the active playlist.
+        Play the previous item in the last played playlist.
+
+        Note that the item played will be from the last playlist that an item
+        was played from even if another playlist is set as current.  Use the
+        play_specific method first to play an item from a specific playlist
+        before using this method.
 
         :param by: The media player field used to determine what counts as
             previous (i.e. "%title%").  None = use the items index in the
@@ -489,8 +510,8 @@ class Client:
             that the paths including the drive letter are case sensitive even
             in windows.
         :param dest_index: The index in the playlist to insert the new items.
-        :param asynchronous: Set to True to make the request asynchronously
-            and not wait for the items to finish processing before returning.
+        :param asynchronous: Set to True to not wait for the media player to
+            finish added items to finish processing before returning.
         """
         paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         params = {"async": param_value_to_str(asynchronous)}
