@@ -19,6 +19,12 @@ Installation
     pip install pyfoobeef
 
 
+Documentation
+-------------
+
+Documentation available at https://pyfoobeef.readthedocs.io/en/latest/
+
+
 Examples
 --------
 Synchronous client:
