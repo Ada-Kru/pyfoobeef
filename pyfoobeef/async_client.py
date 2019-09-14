@@ -167,6 +167,9 @@ class AsyncClient:
             ["%title%", "%album%"] will result in the returned object
             bieng subscriptable like active_item.columns["%album%"] which will
             return information returned from the active item's %album% field.
+
+            If this argument is not specified a default column map will be
+            used.
         :returns: PlayerState object
         """
         if column_map is None:
@@ -324,6 +327,9 @@ class AsyncClient:
             ["%title%", "%album%"] will result in the returned object bieng
             subscriptable like columns["%album%"] which will return
             information returned from the active item's %album% field.
+
+            If this argument is not specified a default column map will be
+            used.
         :returns: A PlaylistItems object.
         """
         if column_map is None:

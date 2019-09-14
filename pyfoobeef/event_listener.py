@@ -40,6 +40,9 @@ class EventListener:
         ["%title%", "%album%"] will result in the returned object
         bieng subscriptable like active_item.columns["%album%"] which will
         return information returned from the active item's %album% field.
+
+        If this argument is not specified a default column map will be
+        used.
     :param no_active_item_ignore_time: When switching between playlist
         items the media player will briefly report that there is no active
         item before updating with the information of the next item.  This
@@ -66,6 +69,9 @@ class EventListener:
         ["%title%", "%album%"] will result in the returned object bieng
         subscriptable like columns["%album%"] which will return
         information returned from the active item's %album% field.
+
+        If this argument is not specified a default column map will be
+        used.
     :param offset: The index offset to retrieve playlist items from when
         playlist_ref is not set to None.
     :param count: The number of playlist items to retrieve when

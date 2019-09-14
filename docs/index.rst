@@ -56,7 +56,8 @@ Synchronous client:
     # Give the media player a bit of time to actually start playing.
     sleep(0.5)
 
-    # Columns (media data fields) to retrieve and the names to map them to.
+    # Column maps represent the media data fields to retrieve and the names
+    # to assign the returned data to.
     column_map = {
         "%artist%": "artist",
         "%title%": "title",

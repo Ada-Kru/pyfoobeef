@@ -29,6 +29,10 @@ Data Models
 Exceptions
 ----------
 
+.. autoexception:: pyfoobeef.ConnectError
+    :members:
+    :undoc-members:
+
 .. autoexception:: pyfoobeef.RequestError
     :members:
     :undoc-members:

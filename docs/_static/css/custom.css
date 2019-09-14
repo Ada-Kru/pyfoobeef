@@ -1,0 +1,45 @@
+a:visited {
+	color: #017820;
+}
+
+th, dl.field-list > dt {
+	background-color: #CDF8D8;
+}
+
+dl.field-list {
+	display: grid;
+	grid-template-columns: fit-content(30%) auto;
+	background-color: #F3FFE2;
+}
+
+code.descname {
+	background-color: #D9F8A8;
+	font-weight: bold;
+	font-size: 1.4em;
+	padding-left: 4px;
+	padding-right: 4px;
+	border-radius: 10px;
+}
+
+em.sig-param {
+	background-color: #B6F1C5;
+	padding-left: 3px;
+	padding-right: 3px;
+	font-size: 0.9em;
+}
+
+dl.method {
+	background-color: #F4FEE5;
+	padding: 0px 4px;
+	border-radius: 10px;
+}
+
+dl.attribute {
+	background-color: #CDF8D8;
+	padding: 0px 4px;
+	border-radius: 10px;
+}
+
+div.highlight-python {
+	font-size: 1.2em;
+}
