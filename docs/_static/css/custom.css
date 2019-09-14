@@ -3,41 +3,57 @@ a:visited {
 }
 
 th, dl.field-list > dt {
-	background-color: #CDF8D8;
+	background-color: #C5FFB1;
+	border-radius: 3px;
 }
 
 dl.field-list {
 	display: grid;
 	grid-template-columns: fit-content(30%) auto;
-	background-color: #F3FFE2;
+	background-color: #B9FFDC;
+	padding-right: 4px;
+	border: 1px solid #0005;
+	border-radius: 4px;
 }
 
 code.descname {
-	background-color: #D9F8A8;
+	background-color: #FDFFB9;
 	font-weight: bold;
 	font-size: 1.4em;
 	padding-left: 4px;
 	padding-right: 4px;
 	border-radius: 10px;
+	border: 2px solid #00000050;
 }
 
 em.sig-param {
-	background-color: #B6F1C5;
-	padding-left: 3px;
-	padding-right: 3px;
 	font-size: 0.9em;
 }
 
 dl.method {
-	background-color: #F4FEE5;
+	background-color: #E5FEFE;
 	padding: 0px 4px;
 	border-radius: 10px;
+	border: 1px solid #0004;
+}
+/*
+dl.method::before {
+	content: "Method";
+	font-size: 0.75em;
+	font-weight: bold;
+}
+*/
+dl.attribute {
+	background-color: #DAFFE1;
+	padding: 0px 4px;
+	border-radius: 10px;
+	border: 1px solid #0004;
 }
 
-dl.attribute {
-	background-color: #CDF8D8;
-	padding: 0px 4px;
-	border-radius: 10px;
+dl.attribute::before {
+	content: "Attribute";
+	font-size: 0.75em;
+	font-weight: bold;
 }
 
 div.highlight-python {

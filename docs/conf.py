@@ -64,7 +64,7 @@ html_theme_options = {
     "stickysidebar": True,
     "externalrefs": True,
     "sidebarbgcolor": "#444",
-    "sidebarlinkcolor": "#CBFF7A",
+    "sidebarlinkcolor": "#FFF04B",
     "bgcolor": "#DDDDDD",
     "linkcolor": "FFEA00",
     "visitedlinkcolor": "DDC800",

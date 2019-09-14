@@ -6,7 +6,7 @@ class ConnectError(Exception):
         handler.
     """
 
-    def __init__(self, original_exception):
+    def __init__(self, original_exception: Exception):
         self.original_exception = original_exception
         """The original exception made by the HTTP handler."""
 
@@ -25,7 +25,7 @@ class RequestError(Exception):
     :param response_data: The parsed data from beefwebs JSON response.
     """
 
-    def __init__(self, response_code, response_data):
+    def __init__(self, response_code: int, response_data: dict):
         self.response_code = response_code
         """The HTTP status code returned by the request."""
         self.response_data = response_data
