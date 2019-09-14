@@ -40,9 +40,8 @@ from .models import (
     PlaylistInfo,
     PlaylistItems,
     PlayerState,
-    FileSystemEntry,
 )
-from .exceptions import RequestError
+from .exceptions import ConnectError, RequestError
 
 
 class Client:
@@ -55,6 +54,8 @@ class Client:
         beefweb.
     :param password: The password to use if authentification is enabled in
         beefweb.
+    :param timeout: The maximum amount of time to wait when making a http
+        request.
     """
 
     _default_column_map = {
@@ -75,6 +76,7 @@ class Client:
         port: int,
         username: Optional[str] = None,
         password: Optional[str] = None,
+        timeout: float = 10.0,
     ):
         if not base_url.lower().startswith("http"):
             base_url = "http://" + base_url
@@ -83,7 +85,7 @@ class Client:
         self._user_pass = None
         if username is not None and password is not None:
             self._user_pass = ":".join((username, password))
-        self._http = urllib3.PoolManager()
+        self._http = urllib3.PoolManager(timeout=timeout)
 
     def _request(
         self, endpoint, params=None, paths=None, body=None, original_args=None
@@ -101,7 +103,9 @@ class Client:
             passed to the caller.
         :returns: The return type specified in the object passed to the
             endpoint argument.
-        :raises: RequestError if beefweb does not accept the request.
+        :raises: ConnectError if the script cannot connect to the beefweb
+            server.
+        :raises: RequestError if beefweb returns an error.
         """
         if paths is not None:
             endpoint_path = endpoint.endpoint.format(**paths)
@@ -118,9 +122,19 @@ class Client:
         # The beefweb server treats header names as case sensitive...
         if "authorization" in headers:
             headers["Authorization"] = headers.pop("authorization")
-        response = self._http.request(
-            endpoint.method, url, body=body, headers=headers
-        )
+
+        try:
+            response = self._http.request(
+                endpoint.method, url, body=body, headers=headers
+            )
+        except (
+            urllib3.exceptions.TimeoutError,
+            urllib3.exceptions.ConnectionError,
+            urllib3.exceptions.MaxRetryError,
+            urllib3.exceptions.ResponseError,
+        ) as err:
+            raise ConnectError(err)
+
         self._http.clear()
 
         # print(url, response.status, response.data, body)

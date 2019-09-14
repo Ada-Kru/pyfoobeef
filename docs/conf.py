@@ -73,6 +73,8 @@ html_theme_options = {
     "relbarbgcolor": "#222",
     "headbgcolor": "#222",
     "headtextcolor": "#EEEEEE",
+    "footerbgcolor": "#222",
+    "footertextcolor": "#EEEEEE",
 }
 pygments_style = "monokai"
 

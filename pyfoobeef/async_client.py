@@ -39,7 +39,7 @@ from .models import (
     PlaylistItems,
     PlayerState,
 )
-from .exceptions import RequestError
+from .exceptions import ConnectError, RequestError
 
 
 class AsyncClient:
@@ -52,6 +52,8 @@ class AsyncClient:
         beefweb.
     :param password: The password to use if authentification is enabled in
         beefweb.
+    :param timeout: The maximum amount of time to wait when making a http
+        request.
     """
 
     _default_column_map = {
@@ -72,6 +74,7 @@ class AsyncClient:
         port: int,
         username: Optional[str] = None,
         password: Optional[str] = None,
+        timeout: float = 10.0,
     ):
         if not base_url.lower().startswith("http"):
             base_url = "http://" + base_url
@@ -80,6 +83,9 @@ class AsyncClient:
         self.auth = None
         if username is not None and password is not None:
             self.auth = aiohttp.BasicAuth(login=username, password=password)
+        self._timeout = aiohttp.ClientTimeout(
+            connect=timeout, sock_read=timeout
+        )
 
     async def _request(
         self, endpoint, params=None, paths=None, body=None, original_args=None
@@ -97,7 +103,9 @@ class AsyncClient:
             passed to the caller.
         :returns: The return type specified in the object passed to the
             endpoint argument.
-        :raises: RequestError if beefweb does not accept the request.
+        :raises: ConnectError if the script cannot connect to the beefweb
+            server.
+        :raises: RequestError if beefweb returns an error.
         """
         if paths is not None:
             endpoint_path = endpoint.endpoint.format(**paths)
@@ -106,23 +114,36 @@ class AsyncClient:
 
         url = f"{self.base_url}:{self.port}/api{endpoint_path}"
 
-        async with aiohttp.ClientSession(auth=self.auth) as session:
-            async with session.request(
-                method=endpoint.method, url=url, params=params, json=body
-            ) as response:
+        async with aiohttp.ClientSession(
+            auth=self.auth, timeout=self._timeout
+        ) as session:
+            try:
+                async with session.request(
+                    method=endpoint.method, url=url, params=params, json=body
+                ) as response:
 
-                # print(url, response.status, response.data, body)
-                if response.status not in (200, 204):
-                    raise RequestError(response.status, await response.json())
-                if endpoint.model is not None:
-                    data = await response.json()
-                    # pprint(data)
-                    if not original_args or "column_map" not in original_args:
-                        return endpoint.model(data)
-                    else:
-                        return endpoint.model(
-                            data, column_map=original_args["column_map"]
+                    # print(url, response.status, response.data, body)
+                    if response.status not in (200, 204):
+                        raise RequestError(
+                            response.status, await response.json()
                         )
+                    if endpoint.model is not None:
+                        data = await response.json()
+                        # pprint(data)
+                        if (
+                            not original_args
+                            or "column_map" not in original_args
+                        ):
+                            return endpoint.model(data)
+                        else:
+                            return endpoint.model(
+                                data, column_map=original_args["column_map"]
+                            )
+            except (
+                aiohttp.ClientResponseError,
+                aiohttp.ClientConnectionError,
+            ) as err:
+                raise ConnectError(err)
 
     async def get_player_state(
         self, column_map: Optional[ColumnsMap] = None

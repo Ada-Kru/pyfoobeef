@@ -122,7 +122,7 @@ The asynchronous event listener can automatically execute callbacks when certain
     async def example():
         listener = pyfoobeef.EventListener(
             base_url="localhost",
-            port=6980,
+            port=8880,
             active_item_column_map={
                 "%artist%": "artist",
                 "%title%": "title",

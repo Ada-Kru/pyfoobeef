@@ -1,5 +1,7 @@
 def param_value_to_str(value):
     val_type = type(value)
+    if val_type is str:
+        return value
     if val_type is bool:
         return "true" if value else "false"
     if val_type is list or val_type is tuple:
@@ -8,12 +10,11 @@ def param_value_to_str(value):
         return ",".join(value.keys())
     if val_type in (int, float):
         return str(value)
+    # uses __name__ to avoid circular import issues
     if val_type.__name__ == "PlaylistInfo":
         return value.id
     if val_type.__name__ == "FileSystemEntry":
         return value.path
-    if val_type is str:
-        return value
 
 
 def process_column_map(column_map):
