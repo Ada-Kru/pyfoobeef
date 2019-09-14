@@ -92,3 +92,5 @@ html_sidebars = {
         "searchbox.html",
     ]
 }
+
+master_doc = "index"
