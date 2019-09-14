@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name="pyfoobeef",
-    version="0.9",
+    version="0.9.0.1",
     author="Adam Krueger",
     author_email="adamkru@gmail.com",
     description=(
@@ -25,7 +25,7 @@ setuptools.setup(
         "Natural Language :: English",
     ],
     python_requires=">=3.6",
-    install_requires=["aiohttp>=3", "aiohttp-sse-client"],
+    install_requires=["urllib3", "aiohttp>=3", "aiohttp-sse-client"],
     test_suite="tests",
     tests_require=["asynctest"],
 )
