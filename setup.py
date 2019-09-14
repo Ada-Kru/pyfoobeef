@@ -9,12 +9,13 @@ setuptools.setup(
     author="Adam Krueger",
     author_email="adamkru@gmail.com",
     description=(
-        "Allows control of the Foobar2000 and DeaDBeeF"
-        " media players through the beefweb plugin API."
+        "Allows control of the Foobar2000 and DeaDBeeF media players in "
+        "Python through the beefweb plugin."
     ),
     long_description=long_description,
     long_description_content_type="text/x-rst",
     url="https://github.com/Ada-Kru/pyfoobeef",
+    keywords="Foobar2000 DeaDBeeF Media Player Beefweb Music Audio",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

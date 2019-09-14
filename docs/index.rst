@@ -169,6 +169,7 @@ The asynchronous event listener can automatically execute callbacks when certain
 
         await asyncio.sleep(10)
 
+        # The listener should always be disconnected when done.
         await listener.disconnect()
 
 
