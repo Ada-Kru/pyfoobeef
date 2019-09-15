@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name="pyfoobeef",
-    version="0.9.0.3",
+    version="0.9.0.4",
     author="Adam Krueger",
     author_email="adamkru@gmail.com",
     description=(
