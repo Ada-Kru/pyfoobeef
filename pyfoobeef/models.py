@@ -96,23 +96,48 @@ class ActiveItem:
         """
 
     def has_columns(self) -> bool:
-        """:returns: If the active item returned column information."""
+        """
+        Indicate if active item returned column information.
+
+        :returns: True if the active item returned column information.
+        :rtype: bool
+        """
         return self.columns is not None
 
     def position_hhmmss(self) -> str:
-        """:returns: The playback position of the active item as hh:mm:ss."""
+        """
+        Return the playback position of the active item as hh:mm:ss.
+
+        :returns: The playback position of the active item as hh:mm:ss.
+        :rtype: str
+        """
         return seconds_to_hhmmss(self.position)
 
     def position_mmss(self) -> str:
-        """:returns: The playback position of the active item as mm:ss."""
+        """
+        Return the playback position of the active item as mm:ss.
+
+        :returns: The playback position of the active item as mm:ss.
+        :rtype: str
+        """
         return seconds_to_mmss(self.position)
 
     def duration_hhmmss(self) -> str:
-        """:returns: The active item's duration as hh:mm:ss."""
+        """
+        Return the duration of the active item as hh:mm:ss.
+
+        :returns: The active item's duration as hh:mm:ss.
+        :rtype: str
+        """
         return seconds_to_hhmmss(self.duration)
 
     def duration_mmss(self) -> str:
-        """:returns: The active item's duration as mm:ss."""
+        """
+        Return the active item's duration as mm:ss.
+
+        :returns: The active item's duration as mm:ss.
+        :rtype: str
+        """
         return seconds_to_mmss(self.duration)
 
     def __repr__(self):
@@ -258,6 +283,7 @@ class PlayerState:
             position is greater than the active item's duration will return
             the active item's duration.  If the playback state is not
             "playing" will return the active item's position.
+        :rtype: float
         """
         if self.playback_state == "playing":
             est_pos = time() - self._creation_time + self.active_item.position
@@ -266,11 +292,21 @@ class PlayerState:
             return self.active_item.position
 
     def estimated_position_hhmmss(self) -> str:
-        """:returns: Output of the estimated_position method as hh:mm:ss."""
+        """
+        Identical to the estimated_position method but returns hh:mm:ss.
+
+        :returns: Output of the estimated_position method as hh:mm:ss.
+        :rtype: str
+        """
         return seconds_to_hhmmss(self.estimated_position())
 
     def estimated_position_mmss(self) -> str:
-        """:returns: Output of the estimated_position method as mm:ss."""
+        """
+        Identical to the estimated_position method but returns mm:ss.
+
+        :returns: Output of the estimated_position method as mm:ss.
+        :rtype: str
+        """
         return seconds_to_mmss(self.estimated_position())
 
 
@@ -304,11 +340,12 @@ class Playlists:
         """
         Search for a specific playlist playlist.
 
-        :param title: The title of the playlist to find.
-        :param search_id: The ID of the playlist to search for.
-        :param find_last: If true returns the last item found.
+        :param Optional[str] title: The title of the playlist to find.
+        :param Optional[str] search_id: The ID of the playlist to search for.
+        :param Optional[bool] find_last: If true returns the last item found.
 
         :returns: A PlaylistInfo namedtuple if found else None.
+        :rtype: Optional[PlayerInfo]
         """
         plsts = self._playlists if not find_last else reversed(self._playlists)
         for playlist in plsts:
@@ -360,11 +397,14 @@ class PlaylistItems:
         Accepts attributes of the columns objects as argument names (i.e
         items.find_item(title="The Song Title", artist="The Song Artist")).
 
-        :param case_sens:    If true perform a case sensitive search.
-        :param return_index: If true returns the item's index in the playlist.
+        :param Optional[bool] case_sens: If true perform a case sensitive
+            search.
+        :param Optional[bool] return_index: If true returns the item's index
+            in the playlist.
 
-        :returns: A list of Columns objects or IndexItem namedtuples if
+        :returns: A list of either Columns objects or IndexItem namedtuples if
                   return_index is true.
+        :rtype: Union[List[Columns], List[IndexItem]]
         """
         results = []
         for index, item in enumerate(self._items):
@@ -420,11 +460,21 @@ class FileSystemEntry:
         """The timestamp of the file or directory."""
 
     def is_file(self) -> bool:
-        """:returns: True if the item is a file, False if directory."""
+        """
+        Indicate if the item is a file.
+
+        :returns: True if the item is a file, False if it is a directory.
+        :rtype: bool
+        """
         return self._is_file
 
     def is_directory(self) -> bool:
-        """:returns: True if the item is a directory, False if file."""
+        """
+        Indicate if the item is a directory.
+
+        :returns: True if the item is a directory, False if it is a file.
+        :rtype: bool
+        """
         return not self._is_file
 
     def __repr__(self):
