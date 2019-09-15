@@ -3,6 +3,10 @@ Changelog
 =========
 
 
+0.9.0.3
+-------
+* Update documentation with more typing information.
+
 0.9.0.2
 -------
 * Fix the asynchronous argument in add_playlist_items.

@@ -1,1 +1,1 @@
-pyfoobeef>=0.9
+pyfoobeef
