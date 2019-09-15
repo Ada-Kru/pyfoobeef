@@ -30,6 +30,12 @@ em.sig-param {
 	font-size: 0.9em;
 }
 
+dl.class {
+	background-color: #fbfbfb;
+	padding: 4px;
+	border-radius: 10px;
+}
+
 dl.method {
 	background-color: #E5FEFE;
 	padding: 0px 4px;
