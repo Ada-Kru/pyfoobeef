@@ -1,21 +1,21 @@
 The ``Client`` Class
 --------------------
 
-.. autoclass:: pyfoobeef.Client
+.. automodule:: pyfoobeef.client
   :members:
   :undoc-members:
 
 The ``AsyncClient`` Class
 -------------------------
 
-.. autoclass:: pyfoobeef.AsyncClient
+.. automodule:: pyfoobeef.async_client
    :members:
    :undoc-members:
 
 The ``EventListener`` Class
 ---------------------------
 
-.. autoclass:: pyfoobeef.EventListener
+.. automodule:: pyfoobeef.event_listener
    :members:
    :undoc-members:
 

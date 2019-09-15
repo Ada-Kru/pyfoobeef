@@ -93,13 +93,13 @@ class Client:
         """
         Send a HTTP request to the beefweb server.
 
-        :param endpoint: The endpoint object containing information about the
-            endpoint and the return type.
-        :param params: Dict containing the parameters to be added to the
+        :param Endpoint endpoint: The endpoint object containing information
+            about the endpoint and the return type.
+        :param dict params: Dict containing the parameters to be added to the
             endpoint url.
-        :param paths: Dict to be used for formatting the endpoint url.
-        :param body: Object to be added as the requests JSON payload.
-        :param original_args: Dict containing the original arguments
+        :param dict paths: Dict to be used for formatting the endpoint url.
+        :param dict body: Object to be added as the requests JSON payload.
+        :param dict original_args: Dict containing the original arguments
             passed to the caller.
         :returns: The return type specified in the object passed to the
             endpoint argument.
@@ -156,26 +156,31 @@ class Client:
         """
         Get the status of the player.
 
-        :param column_map: Dict, list, tuple, or set where each key
-            (for dict, set) or item (for list, tuple) is the active item field
-            to request.  If a dict is used each value is the attribute name to
-            map that key to the returned Column object.
-
-            Names that would be invalid as Python attrubute names may only be
-            accessed through subscripting (i.e. "%title%" or "my custom name").
-
-            Examples-
-            {"%track artist%": "artist"} will result in the returned object
-            having an active_item.columns.artist attribute containing
-            information returned from the active item's %track artist% field.
-
-            ["%title%", "%album%"] will result in the returned object
-            bieng subscriptable like active_item.columns["%album%"] which will
-            return information returned from the active item's %album% field.
+        :param Optional[ColumnsMap] column_map: Dict, list, tuple, or set
+            where each key (for dict, set) or item (for list, tuple) is the
+            active item field to request.  If a dict is used each value is the
+            attribute name to map that key to the returned Column object.
 
             If this argument is not specified a default column map will be
             used.
+
+            .. note:: Names that would be invalid as Python attrubute names
+                may only be accessed through subscripting (i.e. "%title%" or
+                "my custom name").
+
+
+                Examples-
+                {"%track artist%": "artist"} will result in the returned
+                object having an active_item.columns.artist attribute
+                containing information returned from the active item's
+                %track artist% field.
+
+                ["%title%", "%album%"] will result in the returned object
+                bieng subscriptable like active_item.columns["%album%"] which
+                will return information returned from the active item's
+                %album% field.
         :returns: PlayerState object
+        :rtype: PlayerState
         """
         if column_map is None:
             column_map = self._default_column_map
@@ -190,23 +195,32 @@ class Client:
         self,
         volume: Optional[float] = None,
         mute: Optional[bool] = None,
-        position: Optional[int] = None,
-        relative_position: Optional[int] = None,
+        position: Optional[float] = None,
+        relative_position: Optional[float] = None,
         playback_mode: Optional[int] = None,
     ) -> None:
         """
         Set the volume level, playback position, and playback order.
 
-        :param volume: Floating point number to set the player's volume level.
-            Value may need to be a negative number to work correctly. Use
-            information returned by get_player_state to determine the min and
-            max values for the connected media player.
-        :param mute: True = muted, False = unmuted, None = no change.
-        :param position: Sets the position of the current track in seconds.
-        :param relative_position: Seconds to Add or subtract from the current
-            position.
-        :param playback_mode: Number that sets playback order (repeat,
-            random, shuffle, etc.)
+        .. note:: Note that the value for the volume parameter may need to be
+            a negative number to work correctly. Use information returned by
+            get_player_state to determine the min and max values for the
+            connected media player.
+
+        :param Optional[float] volume: Floating point number to set the
+            player's volume level. Value may need to be a negative number to
+            work correctly. Use information returned by get_player_state to
+            determine the min and max values for the connected media player.
+        :param Optional[bool] mute: True = muted, False = unmuted, None = no
+            change.
+        :param Optional[float] position: Sets the position of the current
+            track in seconds.
+        :param Optional[float] relative_position: Seconds to Add or subtract
+            from the current position.
+        :param Optional[int] playback_mode: Numerical mode that sets playback
+            order (repeat, random, shuffle, etc.).  Use the playback_modes
+            attribute from get_player_state() to determine the possible
+            choices.
         """
         kw_map = {}
         if volume is not None:
@@ -228,9 +242,10 @@ class Client:
         """
         Start playback.
 
-        Note that the item played will be from the last playlist that an item
-        was played from even if another playlist is set as current.  Use the
-        play_specific method to play an item from a specific playlist.
+        .. note:: Note that the item played will be from the last playlist
+            that an item was played from even if another playlist is set as
+            current.  Use the play_specific method first to play an item from a
+            specific playlist.
         """
         self._request(PLAY)
 
@@ -238,9 +253,9 @@ class Client:
         """
         Start playback of a specific item from a specific playlist.
 
-        :param playlist_ref: The PlaylistInfo object, ID, or numerical index
-            of the playlist that contains the media to play.
-        :param index: The index number of the item to play.
+        :param PlaylistRef playlist_ref: The PlaylistInfo object, ID, or
+            numerical index of the playlist that contains the media to play.
+        :param int index: The index number of the item to play.
         """
         playlist_ref = param_value_to_str(playlist_ref)
         self._request(PLAY_SPECIFIC, paths=locals())
@@ -249,10 +264,10 @@ class Client:
         """
         Play a random item from the last played playlist.
 
-        Note that the item played will be from the last playlist that an item
-        was played from even if another playlist is set as current.  Use the
-        play_specific method first to play an item from a specific playlist
-        before using this method.
+        .. note:: Note that the item played will be from the last playlist
+            that an item was played from even if another playlist is set as
+            current.  Use the play_specific method first to play an item from a
+            specific playlist.
         """
         self._request(PLAY_RANDOM)
 
@@ -260,14 +275,13 @@ class Client:
         """
         Play the next item in the last played playlist.
 
-        Note that the item played will be from the last playlist that an item
-        was played from even if another playlist is set as current.  Use the
-        play_specific method first to play an item from a specific playlist
-        before using this method.
+        .. note:: Note that the item played will be from the last playlist
+            that an item was played from even if another playlist is set as
+            current.  Use the play_specific method first to play an item from a
+            specific playlist.
 
-        :param by: The media player field used to determine what counts as
-            next (i.e. "%title%").  None = use the items index in the
-            playlist.
+        :param str by: The media player field used to determine what counts as
+            next (i.e. "%title%").  None = use the items index in the playlist.
         """
         kw_map = {"by": by} if by is not None else {}
         self._request(PLAY_NEXT, params=kw_map)
@@ -276,12 +290,12 @@ class Client:
         """
         Play the previous item in the last played playlist.
 
-        Note that the item played will be from the last playlist that an item
-        was played from even if another playlist is set as current.  Use the
-        play_specific method first to play an item from a specific playlist
-        before using this method.
+        .. note:: Note that the item played will be from the last playlist
+            that an item was played from even if another playlist is set as
+            current.  Use the play_specific method first to play an item from a
+            specific playlist.
 
-        :param by: The media player field used to determine what counts as
+        :param str by: The media player field used to determine what counts as
             previous (i.e. "%title%").  None = use the items index in the
             playlist.
         """
@@ -305,19 +319,21 @@ class Client:
         Get an object representing the playlists.
 
         :returns: A Playlists object
+        :rtype: Playlists
         """
         params = {"playlists": "true"}
         return self._request(PLAYLIST_QUERY, params=params)
 
     def find_playlist(
-        self, title: str = None, search_id: str = None
+        self, title: Optional[str] = None, search_id: Optional[str] = None
     ) -> Optional[PlaylistInfo]:
         """
         Get an object representing a specific playlist.
 
-        :param title: String representing the playlist's title.
-        :param search_id: The id of the playlist.
-        :returns: A PlaylistInfo object or None if not found.
+        :param Optional[str] title: String representing the playlist's title.
+        :param Optional[str] search_id: The id of the playlist.
+        :returns: A PlaylistInfo namedtuple or None if not found.
+        :rtype: Optional[PlaylistInfo]
         """
         return self.get_playlists().find_playlist(
             title=title, search_id=search_id
@@ -333,30 +349,35 @@ class Client:
         """
         Get an object representing the items in a specific playlist.
 
-        :param playlist_ref: The PlaylistInfo object, ID, or numerical
-            playlist index.
-        :param offset: The start index of the items to retrieve.
-        :param count: The amount of items to retrieve.
-        :param column_map: Dict, list, tuple, or set where each key
-            (for dict, set) or item (for list, tuple) is the item field
-            to request.  If a dict is used each value is the attribute name to
-            map that key to the returned Column object.
-
-            Names that would be invalid as Python attrubute names may only be
-            accessed through subscripting (i.e. "%title%" or "my custom name").
-
-            Examples-
-            {"%track artist%": "artist"} will result in the returned object
-            having an artist attribute containing information returned from
-            the active item's %track artist% field.
-
-            ["%title%", "%album%"] will result in the returned object bieng
-            subscriptable like columns["%album%"] which will return
-            information returned from the active item's %album% field.
+        :param PlaylistRef playlist_ref: The PlaylistInfo object, ID, or
+            numerical playlist index.
+        :param int offset: The start index of the items to retrieve.
+        :param int count: The amount of items to retrieve.
+        :param Optional[ColumnsMap] column_map: Dict, list, tuple, or set where
+            each key (for dict, set) or item (for list, tuple) is the item
+            field to request.  If a dict is used each value is the attribute
+            name to map that key to the returned Column object.
 
             If this argument is not specified a default column map will be
             used.
+
+            .. note:: Names that would be invalid as Python attrubute names
+                may only be accessed through subscripting (i.e. "%title%" or
+                "my custom name").
+
+                Examples-
+                {"%track artist%": "artist"} will result in the returned
+                object having an active_item.columns.artist attribute
+                containing information returned from the active item's
+                %track artist% field.
+
+                ["%title%", "%album%"] will result in the returned object
+                bieng subscriptable like active_item.columns["%album%"] which
+                will return information returned from the active item's
+                %album% field.
+
         :returns: A PlaylistItems object.
+        :rtype: PlaylistItems
         """
         if column_map is None:
             column_map = self._default_column_map
@@ -391,17 +412,18 @@ class Client:
         """
         Create a new playlist.
 
-        :param title: The title of the playlist.
-        :param index: The numerical index to insert the new playlist.
-            None = last position.
-        :param return_playlist: If True automatically makes a second request
-            to beefweb to retrieve the playlist info for the new playlist.
-            There is a small chance that the incorrect playlist will be
-            returned during the second request (i.e. if a playlist is added or
-            removed between api calls).  In this case an AssertionError will
-            be raised.
+        :param str title: The title of the playlist.
+        :param Optional[int] index: The numerical index to insert the new
+            playlist. None = last position.
+        :param Optional[bool] return_playlist: If True automatically makes a
+            second request to beefweb to retrieve the playlist info for the
+            new playlist. There is a small chance that the incorrect playlist
+            will be returned during the second request (i.e. if a playlist is
+            added or removed between api calls).  In this case an
+            AssertionError will be raised.
         :returns: A PlaylistInfo namedtuple if return_playlist is True else
             None
+        :rtype: Optional[PlaylistInfo]
         """
         params = {}
         if index is not None:
@@ -428,9 +450,9 @@ class Client:
         """
         Change a playlist's title.
 
-        :param playlist_ref: The PlaylistInfo object, ID, or numerical
-            playlist index.
-        :param title: The new title of the playlist.
+        :param PlaylistRef playlist_ref: The PlaylistInfo object, ID, or
+            numerical playlist index.
+        :param str title: The new title of the playlist.
         """
         paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         params = {"title": title}
@@ -440,8 +462,8 @@ class Client:
         """
         Remove a playlist.
 
-        :param playlist_ref: The PlaylistInfo object, ID, or numerical
-            playlist index.
+        :param PlaylistRef playlist_ref: The PlaylistInfo object, ID, or
+            numerical playlist index.
         """
         paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         return self._request(REMOVE_PLAYLIST, paths=paths)
@@ -450,10 +472,10 @@ class Client:
         """
         Move a playlist to a new index.
 
-        :param playlist_ref: The PlaylistInfo object, ID, or numerical
-            playlist index.
-        :param index: The new index of the playlist. Negative value for last
-            position.
+        :param PlaylistRef playlist_ref: The PlaylistInfo object, ID, or
+            numerical playlist index.
+        :param int index: The new index of the playlist. Negative value to
+            make it the last playlist.
         """
         paths = {
             "playlist_ref": param_value_to_str(playlist_ref),
@@ -465,8 +487,8 @@ class Client:
         """
         Remove all items from a playlist.
 
-        :param playlist_ref: The PlaylistInfo object, ID, or numerical
-            playlist index.
+        :param PlaylistRef playlist_ref: The PlaylistInfo object, ID, or
+            numerical playlist index.
         """
         paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         return self._request(CLEAR_PLAYLIST, paths=paths)
@@ -476,6 +498,7 @@ class Client:
         Get all the files and directories accessable by beefweb.
 
         :returns: A BrowserEntry object.
+        :rtype: BrowserEntry
         """
         return self._request(BROWSER_ROOTS)
 
@@ -483,10 +506,15 @@ class Client:
         r"""
         Get files and directories from a specific path.
 
-        :param path: The path to the directory or file to retrieve.  Note that
-            even in windows the path including the drive letter is case
-            sensitive (r"C:\Music" will work, r"c:\Music" will not).
+        :param str path: The path to the directory or file to retrieve.  Note
+            that even in windows the path including the drive letter is case
+            sensitive (r"C:\\Music" will work, r"c:\\Music" will not).
+
+        .. warning:: Even in windows the path including the drive letter is
+            case sensitive (r"C:\\Music" will work, r"c:\\Music" will not).
+
         :returns: A BrowserEntry object.
+        :rtype: BrowserEntry
         """
         params = {}
         if path is not None:
@@ -503,15 +531,20 @@ class Client:
         """
         Add items to a playlist.
 
-        :param playlist_ref: The PlaylistInfo object, ID, or numerical
-            playlist index.
-        :param items: A list or tuple of strings or FileSystemEntry objects
-            containing the paths of files and/or directories to add.  Note
-            that the paths including the drive letter are case sensitive even
-            in windows.
-        :param dest_index: The index in the playlist to insert the new items.
-        :param asynchronous: Set to True to not wait for the media player to
-            finish added items to finish processing before returning.
+        :param PlaylistRef playlist_ref: The PlaylistInfo object, ID, or
+            numerical playlist index.
+        :param Paths items: A list or tuple of strings or FileSystemEntry
+            objects containing the paths of files and/or directories to add.
+            Note that the paths including the drive letter are case sensitive
+            even in Windows.
+        :param Optional[int] dest_index: The index in the playlist to insert
+            the new items.
+        :param bool asynchronous: Set to True to not wait for the
+            media player to finish processing the added items before
+            returning.  Default = False.
+
+        .. warning:: The paths including the drive letter are case sensitive
+            even in windows.
         """
         paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         params = {"async": param_value_to_str(asynchronous)}
@@ -531,10 +564,12 @@ class Client:
         """
         Copy items to the same playlist.
 
-        :param playlist_ref: The PlaylistInfo object, ID, or numerical
-            playlist index.
-        :param item_indices: Indices of the items to be copied.
-        :param dest_index: The index in the playlist to insert the copies.
+        :param PlaylistRef playlist_ref: The PlaylistInfo object, ID, or
+            numerical playlist index.
+        :param ItemIndices item_indices: List or tuple of the indices of the
+            items to be copied.
+        :param Optional[int] dest_index: The index in the playlist to insert
+            the copies. None = copy to the end of the playlist.
         """
         paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         params = {}
@@ -555,12 +590,14 @@ class Client:
         """
         Copy items to a different playlist.
 
-        :param source_playlist: The PlaylistInfo object, ID, or numerical
-            playlist index of the source.
-        :param source_playlist: The PlaylistInfo object, ID, or numerical
-            playlist index of the destination.
-        :param item_indices: Indices of the items to be copied.
-        :param dest_index: The index in the playlist to insert the copies.
+        :param PlaylistRef source_playlist: The PlaylistInfo object, ID, or
+            numerical playlist index of the source.
+        :param PlaylistRef dest_playlist: The PlaylistInfo object, ID, or
+            numerical playlist index of the destination.
+        :param ItemIndices item_indices: List or tuple of the indices of the
+            items to be copied.
+        :param Optional[int] dest_index: The index in the playlist to insert
+            the copies. None = copy to the end of the playlist.
         """
         paths = {
             "source_playlist_ref": param_value_to_str(source_playlist),
@@ -583,10 +620,12 @@ class Client:
         """
         Move items to a different index in the same playlist.
 
-        :param playlist_ref: The PlaylistInfo object, ID, or numerical
-            playlist index.
-        :param item_indices: Indices of the items to be moved.
-        :param dest_index: The index in the playlist to move the items.
+        :param PlaylistRef playlist_ref: The PlaylistInfo object, ID, or
+            numerical playlist index.
+        :param ItemIndices item_indices: List or tuple of the indices of the
+            items to be moved.
+        :param Optional[int] dest_index: The index in the playlist to insert
+            the copies. None = copy to the end of the playlist.
         """
         paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         params = {}
@@ -607,12 +646,14 @@ class Client:
         """
         Move items to a different playlist.
 
-        :param source_playlist: The PlaylistInfo object, ID, or numerical
-            playlist index of the source.
-        :param source_playlist: The PlaylistInfo object, ID, or numerical
-            playlist index of the destination.
-        :param item_indices: Indices of the items to be moved.
-        :param dest_index: The index in the playlist to insert the items.
+        :param PlaylistRef source_playlist: The PlaylistInfo object, ID, or
+            numerical playlist index of the source.
+        :param PlaylistRef dest_playlist: The PlaylistInfo object, ID, or
+            numerical playlist index of the destination.
+        :param ItemIndices item_indices: List or tuple of the indices of the
+            items to be moved.
+        :param Optional[int] dest_index: The index in the playlist to insert
+            the copies. None = copy to the end of the playlist.
         """
         paths = {
             "source_playlist_ref": param_value_to_str(source_playlist),
@@ -632,9 +673,10 @@ class Client:
         """
         Remove items from a playlist.
 
-        :param playlist_ref: The PlaylistInfo object, ID, or numerical
-            playlist index.
-        :param item_indices: Indices of the items to be removed.
+        :param PlaylistRef playlist_ref: The PlaylistInfo object, ID, or
+            numerical playlist index.
+        :param ItemIndices item_indices: List or tuple of the indices of the
+            items to be removed.
         """
         paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         params = {}
@@ -653,11 +695,11 @@ class Client:
         """
         Sort the items in a playlist.
 
-        :param playlist_ref: The PlaylistInfo object, ID, or numerical
-            playlist index.
-        :param by: The media player field to sort by (i.e. "%title%").
-        :param desc: Sort in descending order.
-        :param random: Sort in random order.
+        :param PlaylistRef playlist_ref: The PlaylistInfo object, ID, or
+            numerical playlist index.
+        :param str by: The media player field to sort by (i.e. "%title%").
+        :param bool desc: Sort in descending order.
+        :param bool random: Sort in random order.
         """
         paths = {"playlist_ref": param_value_to_str(playlist_ref)}
         params = {
@@ -671,9 +713,9 @@ class Client:
         """
         Get an items artwork.
 
-        :param playlist_ref: The PlaylistInfo object, ID, or numerical
-            playlist index.
-        :param index: The index of the item to get artwork for.
+        :param PlaylistRef playlist_ref: The PlaylistInfo object, ID, or
+            numerical playlist index.
+        :param int index: The index of the item to get artwork for.
         """
         paths = {
             "playlist_ref": param_value_to_str(playlist_ref),

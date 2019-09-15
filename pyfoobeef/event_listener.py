@@ -21,65 +21,71 @@ class EventListener:
     """
     A listener class for the beefweb server's eventsource.
 
-    :param base_url: The base URL of the beefweb server
+    :param str base_url: The base URL of the beefweb server
         (i.e. "localhost").
-    :param port: The port number of the beefweb server.
-    :param active_item_column_map: Dict, list, tuple, or set where each key
-        (for dict, set) or item (for list, tuple) is the active item field
-        to request.  If a dict is used each value is the attribute name to
-        map that key to the returned Column object.
-
-        Names that would be invalid as Python attrubute names may only be
-        accessed through subscripting (i.e. "%title%" or "my custom name").
-
-        Examples-
-        {"%track artist%": "artist"} will result in the returned object
-        having an active_item.columns.artist attribute containing
-        information returned from the active item's %track artist% field.
-
-        ["%title%", "%album%"] will result in the returned object
-        bieng subscriptable like active_item.columns["%album%"] which will
-        return information returned from the active item's %album% field.
+    :param int port: The port number of the beefweb server.
+    :param Optional[ColumnsMap] active_item_column_map: Dict, list, tuple, or
+        set where each key (for dict, set) or item (for list, tuple) is the
+        active item field to request.  If a dict is used each value is the
+        attribute name to map that key to the returned Column object.
 
         If this argument is not specified a default column map will be
         used.
-    :param no_active_item_ignore_time: When switching between playlist
-        items the media player will briefly report that there is no active
-        item before updating with the information of the next item.  This
-        argument is the amount of time in seconds that these updates will
+
+        .. note:: Names that would be invalid as Python attrubute names
+            may only be accessed through subscripting (i.e. "%title%" or
+            "my custom name").
+
+            Examples-
+            {"%track artist%": "artist"} will result in the returned
+            object having an active_item.columns.artist attribute
+            containing information returned from the active item's
+            %track artist% field.
+
+            ["%title%", "%album%"] will result in the returned object
+            bieng subscriptable like active_item.columns["%album%"] which
+            will return information returned from the active item's
+            %album% field.
+    :param Optional[float] no_active_item_ignore_time: When switching between
+        playlist items the media player will briefly report that there is no
+        active item before updating with the information of the next item.
+        This argument is the amount of time in seconds that these updates will
         be ignored.  If another update comes in during the ignored period
         and that update shows an active item then the previous update
         showing no active item will be completely ignored. Set to 0 to
         disable.
-    :param playlist_ref: The ID or numerical index of the playlist to
-        retrieve items from.  If left as None will not retrieve any items.
-    :param playlist_items_column_map: Dict, list, tuple, or set where each
-        key (for dict, set) or item (for list, tuple) is the item field
-        to request.  If a dict is used each value is the attribute name to
-        map that key to the returned Column object.
-
-        Names that would be invalid as Python attrubute names may only be
-        accessed through subscripting (i.e. "%title%" or "my custom name").
-
-        Examples-
-        {"%track artist%": "artist"} will result in the returned object
-        having an artist attribute containing information returned from
-        the active item's %track artist% field.
-
-        ["%title%", "%album%"] will result in the returned object bieng
-        subscriptable like columns["%album%"] which will return
-        information returned from the active item's %album% field.
+    :param PlaylistRef playlist_ref: The ID or numerical index of the playlist
+        to retrieve items from.  None = do not retrieve any items.
+    :param Optional[ColumnsMap] playlist_items_column_map: Dict, list, tuple,
+        or set where each key (for dict, set) or item (for list, tuple) is the
+        active item field to request.  If a dict is used each value is the
+        attribute name to map that key to the returned Column object.
 
         If this argument is not specified a default column map will be
         used.
-    :param offset: The index offset to retrieve playlist items from when
+
+        .. note:: Names that would be invalid as Python attrubute names
+            may only be accessed through subscripting (i.e. "%title%" or
+            "my custom name").
+
+            Examples-
+            {"%track artist%": "artist"} will result in the returned
+            object having an active_item.columns.artist attribute
+            containing information returned from the active item's
+            %track artist% field.
+
+            ["%title%", "%album%"] will result in the returned object
+            bieng subscriptable like active_item.columns["%album%"] which
+            will return information returned from the active item's
+            %album% field.
+    :param Optional[int] offset: The index offset to retrieve playlist items
+        from when playlist_ref is not set to None.
+    :param Optional[int] count: The number of playlist items to retrieve when
         playlist_ref is not set to None.
-    :param count: The number of playlist items to retrieve when
-        playlist_ref is not set to None.
-    :param username: The username to use when using authentication with
-        beefweb.
-    :param password: The password to use when using authentication with
-        beefweb.
+    :param Optional[str] username: The username to use when using
+        authentication with beefweb.
+    :param Optional[str] password: The password to use when using
+        authentication with beefweb.
     """
 
     _default_column_map = {
@@ -190,8 +196,8 @@ class EventListener:
         """
         Connect to the beefweb eventsource and begin listening for events.
 
-        :param reconnect_time: The number of seconds to wait between
-            reconnection attempts.
+        :param Optional[float] reconnect_time: The number of seconds to wait
+            between reconnection attempts.
         """
         if self.is_connected():
             return
@@ -298,6 +304,7 @@ class EventListener:
 
         :returns: True if the connected to the eventsource, False if
             disconnected or in the process of connecting.
+        :rtype: bool
         """
         if self._connection is not None:
             return self._connection.ready_state == sse_client.READY_STATE_OPEN
@@ -307,10 +314,10 @@ class EventListener:
         """
         Add a callback for when certain types of information are received.
 
-        :param info_type: The type of data that will cause the callback to
+        :param str info_type: The type of data that will cause the callback to
             run.  Possible values: "player_state", "playlist_items",
             "playlists"
-        :param callback_func: A reference to the function to use as a
+        :param Callable callback_func: A reference to the function to use as a
             callback.  Callbacks will receive the following argument when run
             depending on the info_type:
             "player_state" = A PlayerState object,
@@ -326,9 +333,10 @@ class EventListener:
         """
         Remove a callback.
 
-        :param info_type: The type of data to remove the callback from.
+        :param str info_type: The type of data to remove the callback from.
             Possible values: "player_state", "playlist_items", "playlists"
-        :param callback_func: A reference to the callback function to remove.
+        :param Callable callback_func: A reference to the callback function to
+            remove.
         """
         if info_type not in self._info_name_map:
             raise AttributeError("Invalid info type: " + info_type)
